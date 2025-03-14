@@ -1,5 +1,7 @@
 #include <assert.h>
 #include <fcntl.h>
+#include <limits.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -16,15 +18,17 @@ int rand_bytes(u8* buffer, u32 num_bytes)
 {
     int urandom = open(URANDOM_PATH, O_RDONLY);
     if (urandom < 0) {
-        assert(0);
+        perror("opening /dev/urandom failed");
+        return -1;
     }
 
     ssize_t bytes_read = read(urandom, buffer, num_bytes);
 
     close(urandom);
 
-    if (bytes_read < 0) {
-        assert(0);
+    if (bytes_read != num_bytes) {
+        perror("reading from /dev/urandom failed");
+        return -1;
     }
 
     return 0;
@@ -32,18 +36,20 @@ int rand_bytes(u8* buffer, u32 num_bytes)
 
 u64 rand_num(u32 bits)
 {
-    u64 random;
-    rand_bytes((u8*)&random, sizeof(uint64_t));
-    random &= (1 << bits) - 1;
+    u64 num;
+    rand_bytes((u8*)&num, sizeof(u64));
+    // clear the bits that are not needed and handle overflow (bits >= 64)
+    bits >= MAX_NUM_BITS ? 0 : (num &= ((1ULL << bits) - 1));
 
-    return random;
+    return num;
 }
 
 int cmd_rand(u32 num_bytes)
 {
     unsigned char* buffer = malloc(sizeof(u8) * num_bytes + 1);
     if (buffer == NULL) {
-        assert(0);
+        perror("malloc failed");
+        return -1;
     }
     buffer[num_bytes] = '\0';
 
