@@ -14,7 +14,7 @@
  * @param num_bytes The number of random bytes to read.
  * @return int 0 on success, -1 on failure.
  */
-int rand_bytes(u8* buffer, u32 num_bytes)
+i32 rand_bytes(u8* buffer, u32 num_bytes)
 {
     int urandom = open(URANDOM_PATH, O_RDONLY);
     if (urandom < 0) {
@@ -44,7 +44,7 @@ u64 rand_num(u32 bits)
     return num;
 }
 
-int cmd_rand(u32 num_bytes)
+i32 cmd_rand(u32 num_bytes)
 {
     unsigned char* buffer = malloc(sizeof(u8) * num_bytes + 1);
     if (buffer == NULL) {
@@ -53,7 +53,9 @@ int cmd_rand(u32 num_bytes)
     }
     buffer[num_bytes] = '\0';
 
-    rand_bytes(buffer, num_bytes);
+    if (rand_bytes(buffer, num_bytes) < 0) {
+        return -1;
+    }
 
     write(STDOUT_FILENO, buffer, num_bytes);
 
