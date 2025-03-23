@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 typedef uint8_t  u8;
@@ -9,6 +10,8 @@ typedef uint64_t u64;
 
 typedef int32_t i32;
 typedef int64_t i64;
+
+typedef size_t usize;
 
 #define MAX_NUM_SIZE    sizeof(u64)
 #define MAX_NUM_BITS    (MAX_NUM_SIZE * CHAR_BIT)
@@ -19,6 +22,15 @@ typedef int64_t i64;
 
 u64 powmod(u64 x, u64 y, u64 mod);
 u64 mod_inverse(u64 a, u64 b);
+
+/**
+ * @brief Encode a byte array to base64.
+ *
+ * @param data The data to encode.
+ * @param input_length The length of the data.
+ * @return char* The base64 encoded data.
+ */
+char* base64_encode(const u8* data, usize input_length);
 
 /**
  * @brief Generate a random number with a specified number of bits.

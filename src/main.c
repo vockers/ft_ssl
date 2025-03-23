@@ -19,5 +19,8 @@ int main()
 
     printf("%lu\n", powmod(2, 3, 5));
 
+    char* encoded = base64_encode((u8*)"ABCDEF", 6);
+    printf("%s\n", encoded);
+
     return 0;
 }
