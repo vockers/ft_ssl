@@ -15,7 +15,8 @@ LDFLAGS		= -L$(LIBFT_DIR)/build -lft
 DEBUG_FLAGS = -MMD -MP -g -fsanitize=address
 TEST_FLAGS  = -lcriterion
 
-SRCS = base64.c \
+SRCS = asn1.c \
+	   base64.c \
 	   main.c \
 	   math.c \
 	   prime.c \

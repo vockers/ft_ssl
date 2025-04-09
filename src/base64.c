@@ -1,6 +1,8 @@
-#include "ft_ssl.h"
-
+#include <stdint.h>
 #include <stdlib.h>
+#include <unistd.h>
+
+#include "ft_ssl.h"
 
 static const char* base64_table =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
