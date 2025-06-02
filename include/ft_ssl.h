@@ -36,7 +36,19 @@ typedef struct s_rsa_privkey
     u64 iqmp; // q^-1 mod p
 } t_rsa_privkey;
 
+/**
+ * @brief Modular exponentiation.
+ * @param x The base.
+ * @param y The exponent.
+ * @param mod The modulus.
+ * @return u64 The result of (x^y) % mod.
+ */
 u64 powmod(u64 x, u64 y, u64 mod);
+// Greatest Common Divisor (for lcm)
+u64 gcd(u64 a, u64 b);
+// Least Common Multiple
+u64 lcm(u64 a, u64 b);
+// Modular Inverse (using extended Euclidean)
 u64 mod_inverse(u64 a, u64 b);
 
 /**

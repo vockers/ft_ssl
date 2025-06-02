@@ -13,9 +13,11 @@ void print_pem(t_rsa_privkey* key)
     ft_bzero(buffer, sizeof(buffer));
     usize len     = der_encode_rsa_privkey((u8*)buffer, key);
     char* encoded = base64_encode((u8*)buffer, len);
-    printf("%s", encoded);
+    for (usize i = 0; i < ft_strlen(encoded); i += 64) {
+        printf("%.*s\n", 64, encoded + i);
+    }
     free(encoded);
-    printf("\n-----END RSA PRIVATE KEY-----\n");
+    printf("-----END RSA PRIVATE KEY-----\n");
 }
 
 int cmd_rsa()
@@ -30,12 +32,12 @@ int cmd_rsa()
             break;
         }
     }
-    key.e    = PUBLIC_EXPONENT;
-    u64 phi  = (key.p - 1) * (key.q - 1);
-    key.d    = mod_inverse(key.e, phi);
-    key.dmp1 = key.d % (key.p - 1);
-    key.dmq1 = key.d % (key.q - 1);
-    key.iqmp = mod_inverse(key.q, key.p);
+    key.e      = PUBLIC_EXPONENT;
+    u64 lambda = lcm(key.p - 1, key.q - 1);
+    key.d      = mod_inverse(key.e, lambda);
+    key.dmp1   = key.d % (key.p - 1);
+    key.dmq1   = key.d % (key.q - 1);
+    key.iqmp   = mod_inverse(key.q, key.p);
 
     fprintf(stderr, "\ne is %lu (%#lx)\n", key.e, key.e);
     print_pem(&key);

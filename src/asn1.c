@@ -17,7 +17,11 @@ usize der_encode_int(u8* buffer, u64 num)
     buffer[0] = DER_INT;
     u8 len    = num_len(num);
     buffer[1] = len;
-    memcpy(buffer + 2, &num, len);
+
+    // Write big-endian bytes (skip leading zeros)
+    for (usize i = 0; i < len; i++) {
+        buffer[2 + i] = (num >> (8 * (len - 1 - i))) & 0xFF;
+    }
 
     return len + 2;
 }
