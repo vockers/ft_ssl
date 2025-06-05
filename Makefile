@@ -21,7 +21,8 @@ SRCS = asn1.c \
 	   math.c \
 	   prime.c \
 	   rand.c \
-	   rsa.c
+	   rsa.c \
+	   md5.c
 OBJS = $(patsubst %.c,$(OBJ_DIR)/%.o,$(SRCS))
 
 TEST_SRCS = base64.c \

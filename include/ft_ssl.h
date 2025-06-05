@@ -36,6 +36,13 @@ typedef struct s_rsa_privkey
     u64 iqmp; // q^-1 mod p
 } t_rsa_privkey;
 
+#define MD5_BLOCK_SIZE 64 // 512 bits
+
+typedef struct s_md5_ctx
+{
+    u32 a, b, c, d; // MD5 state variables
+} t_md5_ctx;
+
 /**
  * @brief Modular exponentiation.
  * @param x The base.
@@ -82,3 +89,5 @@ u64 gen_prime(u32 bits, bool verbose);
 i32 cmd_prime(u64 num, bool generate, u32 bits);
 
 int cmd_rsa();
+
+int cmd_md5(const char* file_path);

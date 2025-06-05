@@ -22,7 +22,9 @@ int main()
     // char* encoded = base64_encode((u8*)"ABCDEF", 6);
     // printf("%s\n", encoded);
 
-    cmd_rsa();
+    // cmd_rsa();
+
+    cmd_md5("test.txt");
 
     return 0;
 }

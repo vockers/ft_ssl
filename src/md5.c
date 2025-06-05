@@ -1,0 +1,70 @@
+#include "ft_ssl.h"
+
+#include <fcntl.h>
+#include <stdio.h>
+#include <unistd.h>
+
+#include "libft.h"
+
+static void
+md5_handle_padding(t_md5_ctx* ctx, u8* buffer, ssize_t bytes_read, ssize_t total_bytes_read)
+{
+    int padding_zeroes;
+    if (bytes_read % MD5_BLOCK_SIZE > 55) {
+        padding_zeroes = 128 - (bytes_read % MD5_BLOCK_SIZE) - 9;
+    } else {
+        padding_zeroes = 64 - (bytes_read % MD5_BLOCK_SIZE) - 9;
+    }
+
+    buffer[bytes_read] = 0x80; // Add the 1 bit
+    ft_memset(buffer + bytes_read + 1, 0, padding_zeroes);
+
+    // Append the length of the original message in bits
+    u64 total_bits                          = total_bytes_read * 8;
+    buffer[bytes_read + padding_zeroes + 1] = (total_bits >> 56) & 0xFF;
+
+    write(1, buffer, bytes_read + padding_zeroes + 9); // Write the padded block
+}
+
+static void md5_block(t_md5_ctx* ctx, const u8* block)
+{
+    // This function should implement the MD5 algorithm's block processing
+    // For now, it's a placeholder
+    // You would typically update ctx->a, ctx->b, ctx->c, ctx->d based on the block content
+}
+
+int cmd_md5(const char* file_path)
+{
+    int       fd;
+    t_md5_ctx ctx;
+    u8        buffer[MD5_BLOCK_SIZE * 2]; // Twice the block size to handle padding
+
+    // if ((fd = open(file_path, O_RDONLY)) < 0) {
+    //     // TODO: Handle error properly
+    //     perror("Error opening file");
+    //     return -1;
+    // }
+
+    // Initialize MD5 context
+    ctx.a = 0x67452301;
+    ctx.b = 0xEFCDAB89;
+    ctx.c = 0x98BADCFE;
+    ctx.d = 0x10325476;
+
+    ssize_t bytes_read;
+    ssize_t total_bytes_read = 0;
+
+    while ((bytes_read = read(0, buffer, MD5_BLOCK_SIZE)) == MD5_BLOCK_SIZE) {
+        total_bytes_read += bytes_read;
+        md5_block(&ctx, buffer);
+    }
+
+    md5_handle_padding(&ctx, buffer, bytes_read, total_bytes_read);
+    md5_block(&ctx, buffer);
+
+    // Print the final MD5 hash digest
+
+    // close(fd);
+
+    return 0;
+}

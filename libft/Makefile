@@ -2,7 +2,7 @@ BUILD_DIR	= build
 OBJ_DIR		= $(BUILD_DIR)/.obj
 NAME		= $(BUILD_DIR)/libft.a
 CC			= cc
-CFLAGS		= -Wall -Wextra -Werror -I.
+CFLAGS		= -Wall -Wextra -Werror -I. -fPIC
 
 SRC			= \
 	conversions/ft_abs.c \
