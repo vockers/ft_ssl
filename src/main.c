@@ -3,7 +3,7 @@
 
 #include "ft_ssl.h"
 
-int main()
+int main(int argc, char* argv[])
 {
     // cmd_rand(10);
     // cmd_prime(0, true, 5);
@@ -27,7 +27,5 @@ int main()
 
     // cmd_md5(NULL);
 
-    cmd_sha256(NULL);
-
-    return 0;
+    return cli_run(argc, argv);
 }

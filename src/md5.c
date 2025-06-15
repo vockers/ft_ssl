@@ -36,8 +36,7 @@ static const u32 md5_s[64] =
 };
 // clang-format on
 
-static ssize_t
-md5_handle_padding(t_md5_ctx* ctx, u8* buffer, ssize_t bytes_read, ssize_t total_bytes_read)
+ssize_t md5_handle_padding(t_md5_ctx* ctx, u8* buffer, ssize_t bytes_read, ssize_t total_bytes_read)
 {
     int padding_zeroes;
     if (bytes_read % MD5_BLOCK_SIZE > 55) {
@@ -55,7 +54,7 @@ md5_handle_padding(t_md5_ctx* ctx, u8* buffer, ssize_t bytes_read, ssize_t total
     return bytes_read + padding_zeroes + 9; // Return the total size of the padded block
 }
 
-static void md5_block(t_md5_ctx* ctx0, const u8* block)
+void md5_block(t_md5_ctx* ctx0, const u8* block)
 {
     u32*      m   = (u32*)block;
     t_md5_ctx ctx = *ctx0; // Save the initial state
@@ -90,53 +89,10 @@ static void md5_block(t_md5_ctx* ctx0, const u8* block)
     ctx0->d += ctx.d;
 }
 
-static void md5_init(t_md5_ctx* ctx)
+void md5_init(t_md5_ctx* ctx)
 {
     ctx->a = 0x67452301;
     ctx->b = 0xEFCDAB89;
     ctx->c = 0x98BADCFE;
     ctx->d = 0x10325476;
-}
-
-int cmd_md5(const char* file_path)
-{
-    int       fd = STDIN_FILENO;
-    t_md5_ctx ctx;
-    u8        buffer[MD5_BLOCK_SIZE * 2]; // Twice the block size to handle padding
-
-    if (file_path && (fd = open(file_path, O_RDONLY)) < 0) {
-        perror(file_path);
-        return -1;
-    }
-
-    // Initialize MD5 context
-    md5_init(&ctx);
-
-    ssize_t bytes_read;
-    ssize_t total_bytes_read = 0;
-
-    while ((bytes_read = read(fd, buffer, MD5_BLOCK_SIZE)) == MD5_BLOCK_SIZE) {
-        total_bytes_read += bytes_read;
-        md5_block(&ctx, buffer);
-    }
-
-    ssize_t padded_block_size =
-        md5_handle_padding(&ctx, buffer, bytes_read, total_bytes_read + bytes_read);
-    md5_block(&ctx, buffer); // Process the last block
-    // If the last block couldn't fit the padding, process the next block
-    if (padded_block_size == MD5_BLOCK_SIZE * 2) {
-        md5_block(&ctx, buffer + MD5_BLOCK_SIZE);
-    }
-
-    // Print the final MD5 hash digest
-    ctx.a = ft_bswap32(ctx.a);
-    ctx.b = ft_bswap32(ctx.b);
-    ctx.c = ft_bswap32(ctx.c);
-    ctx.d = ft_bswap32(ctx.d);
-    printf("%.8x%.8x%.8x%.8x\n", ctx.a, ctx.b, ctx.c, ctx.d);
-
-    if (fd != STDIN_FILENO)
-        close(fd);
-
-    return 0;
 }

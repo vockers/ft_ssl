@@ -1,17 +1,7 @@
 #pragma once
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-
-typedef uint8_t  u8;
-typedef uint32_t u32;
-typedef uint64_t u64;
-
-typedef int32_t i32;
-typedef int64_t i64;
-
-typedef size_t usize;
+#include "cli.h"
+#include "utils.h"
 
 #define MAX_NUM_SIZE    sizeof(u64)
 #define MAX_NUM_BITS    (MAX_NUM_SIZE * CHAR_BIT)
@@ -99,6 +89,11 @@ i32 cmd_prime(u64 num, bool generate, u32 bits);
 
 int cmd_rsa();
 
-int cmd_md5(const char* file_path);
+// MD5
+void md5_init(t_md5_ctx* ctx);
+void md5_block(t_md5_ctx* ctx0, const u8* block);
+ssize_t
+md5_handle_padding(t_md5_ctx* ctx, u8* buffer, ssize_t bytes_read, ssize_t total_bytes_read);
 
+// SHA-256
 int cmd_sha256(const char* file_path);

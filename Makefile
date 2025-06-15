@@ -9,7 +9,7 @@ TEST_OBJ_DIR = $(OBJ_DIR)/test
 LIBFT_DIR	= ./libft
 LIBFT		= ./libft/build/libft.a
 
-CC          = clang
+CC          = gcc
 CFLAGS      = -I$(INCLUDE_DIR) -I$(LIBFT_DIR) # -Wall -Wextra -Werror
 LDFLAGS		= -L$(LIBFT_DIR)/build -lft
 DEBUG_FLAGS = -MMD -MP -g -fsanitize=address
@@ -23,7 +23,9 @@ SRCS = asn1.c \
 	   rand.c \
 	   rsa.c \
 	   md5.c \
-	   sha256.c
+	   sha256.c \
+	   cli/cli.c \
+	   cli/cmd_md5.c
 OBJS = $(patsubst %.c,$(OBJ_DIR)/%.o,$(SRCS))
 
 TEST_SRCS = base64.c \
