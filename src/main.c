@@ -24,7 +24,7 @@ int main()
 
     // cmd_rsa();
 
-    cmd_md5("test.txt");
+    cmd_md5(NULL);
 
     return 0;
 }

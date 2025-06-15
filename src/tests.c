@@ -39,3 +39,18 @@ Test(base64_encode, misc)
     cr_assert_str_eq(base64_encode((u8*)"Hello, World!!", 14), "SGVsbG8sIFdvcmxkISE=");
     cr_assert_str_eq(base64_encode((u8*)"Hello, World!!!", 15), "SGVsbG8sIFdvcmxkISEh");
 }
+
+// Test(md5, testEmptyString)
+// {
+//     cr_redirect_stdin();
+//     cr_redirect_stdout();
+//
+//     FILE* f_stdin = cr_get_redirected_stdin();
+//
+//     fprintf(f_stdin, "");
+//     fclose(f_stdin);
+//
+//     cmd_md5(NULL);
+//
+//     cr_assert_stdout_eq_str("d41d8cd98f00b204e9800998ecf8427e\n");
+// }

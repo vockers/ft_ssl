@@ -104,28 +104,32 @@ static void md5_block(t_md5_ctx* ctx0, const u8* block)
     ctx0->d += ctx.d;
 }
 
+static void md5_init(t_md5_ctx* ctx)
+{
+    ctx->a = 0x67452301;
+    ctx->b = 0xEFCDAB89;
+    ctx->c = 0x98BADCFE;
+    ctx->d = 0x10325476;
+}
+
 int cmd_md5(const char* file_path)
 {
-    int       fd;
+    int       fd = STDIN_FILENO;
     t_md5_ctx ctx;
     u8        buffer[MD5_BLOCK_SIZE * 2]; // Twice the block size to handle padding
 
-    // if ((fd = open(file_path, O_RDONLY)) < 0) {
-    //     // TODO: Handle error properly
-    //     perror("Error opening file");
-    //     return -1;
-    // }
+    if (file_path && (fd = open(file_path, O_RDONLY)) < 0) {
+        perror(file_path);
+        return -1;
+    }
 
     // Initialize MD5 context
-    ctx.a = 0x67452301;
-    ctx.b = 0xEFCDAB89;
-    ctx.c = 0x98BADCFE;
-    ctx.d = 0x10325476;
+    md5_init(&ctx);
 
     ssize_t bytes_read;
     ssize_t total_bytes_read = 0;
 
-    while ((bytes_read = read(0, buffer, MD5_BLOCK_SIZE)) == MD5_BLOCK_SIZE) {
+    while ((bytes_read = read(fd, buffer, MD5_BLOCK_SIZE)) == MD5_BLOCK_SIZE) {
         total_bytes_read += bytes_read;
         md5_block(&ctx, buffer);
     }
@@ -145,7 +149,8 @@ int cmd_md5(const char* file_path)
     ctx.d = swap_endian(ctx.d);
     printf("%.8x%.8x%.8x%.8x\n", ctx.a, ctx.b, ctx.c, ctx.d);
 
-    // close(fd);
+    if (fd != STDIN_FILENO)
+        close(fd);
 
     return 0;
 }
