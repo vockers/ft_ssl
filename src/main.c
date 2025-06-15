@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <unistd.h>
 
 #include "ft_ssl.h"
 
@@ -24,7 +25,9 @@ int main()
 
     // cmd_rsa();
 
-    cmd_md5(NULL);
+    // cmd_md5(NULL);
+
+    cmd_sha256(NULL);
 
     return 0;
 }

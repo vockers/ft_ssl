@@ -22,7 +22,8 @@ SRCS = asn1.c \
 	   prime.c \
 	   rand.c \
 	   rsa.c \
-	   md5.c
+	   md5.c \
+	   sha256.c
 OBJS = $(patsubst %.c,$(OBJ_DIR)/%.o,$(SRCS))
 
 TEST_SRCS = base64.c \

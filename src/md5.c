@@ -6,8 +6,6 @@
 
 #include "libft.h"
 
-#define LEFT_ROTATE(n, d) ((n << d) | (n >> (32 - d)))
-
 // clang-format off
 static const u32 md5_k[64] = 
 {
@@ -37,18 +35,6 @@ static const u32 md5_s[64] =
 	6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21
 };
 // clang-format on
-
-static inline u32 swap_endian(u32 val)
-{
-
-    return ((0xFF000000 & val) >> 24) |
-
-           ((0x00FF0000 & val) >> 8) |
-
-           ((0x0000FF00 & val) << 8) |
-
-           ((0x000000FF & val) << 24);
-}
 
 static ssize_t
 md5_handle_padding(t_md5_ctx* ctx, u8* buffer, ssize_t bytes_read, ssize_t total_bytes_read)
@@ -143,10 +129,10 @@ int cmd_md5(const char* file_path)
     }
 
     // Print the final MD5 hash digest
-    ctx.a = swap_endian(ctx.a);
-    ctx.b = swap_endian(ctx.b);
-    ctx.c = swap_endian(ctx.c);
-    ctx.d = swap_endian(ctx.d);
+    ctx.a = ft_bswap32(ctx.a);
+    ctx.b = ft_bswap32(ctx.b);
+    ctx.c = ft_bswap32(ctx.c);
+    ctx.d = ft_bswap32(ctx.d);
     printf("%.8x%.8x%.8x%.8x\n", ctx.a, ctx.b, ctx.c, ctx.d);
 
     if (fd != STDIN_FILENO)

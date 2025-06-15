@@ -36,12 +36,21 @@ typedef struct s_rsa_privkey
     u64 iqmp; // q^-1 mod p
 } t_rsa_privkey;
 
-#define MD5_BLOCK_SIZE 64 // 512 bits
+#define MD5_BLOCK_SIZE    64 // 512 bits
+#define SHA256_BLOCK_SIZE 64 // 512 bits
+
+#define LEFT_ROTATE(n, d)  ((n << d) | (n >> (32 - d)))
+#define RIGHT_ROTATE(n, d) ((n >> d) | (n << (32 - d)))
 
 typedef struct s_md5_ctx
 {
     u32 a, b, c, d; // MD5 state variables
 } t_md5_ctx;
+
+typedef struct s_sha256_ctx
+{
+    u32 a, b, c, d, e, f, g, h; // SHA-256 state variables
+} t_sha256_ctx;
 
 /**
  * @brief Modular exponentiation.
@@ -91,3 +100,5 @@ i32 cmd_prime(u64 num, bool generate, u32 bits);
 int cmd_rsa();
 
 int cmd_md5(const char* file_path);
+
+int cmd_sha256(const char* file_path);
