@@ -34,6 +34,14 @@ typedef struct s_rsa_privkey
 #define LEFT_ROTATE(n, d)  ((n << d) | (n >> (32 - d)))
 #define RIGHT_ROTATE(n, d) ((n >> d) | (n << (32 - d)))
 
+typedef struct s_dgst_opt
+{
+    bool  p; // echo STDIN to STDOUT and append the checksum to STDOUT
+    bool  q; // quiet mode, only print the checksum
+    bool  r; // reverse the format of the output
+    char* s; // print the checksum of the given string
+} t_dgst_opt;
+
 typedef struct s_md5_ctx
 {
     u32   a, b, c, d;             // MD5 state variables
@@ -98,6 +106,7 @@ int cmd_rsa();
 void md5_init(t_md5_ctx* ctx);
 void md5_update(t_md5_ctx* ctx, const u8* data, usize len);
 void md5_final(t_md5_ctx* ctx, u8* digest);
+void md5_str(const char* str, usize len, u8* digest);
 
 // SHA-256
 int cmd_sha256(const char* file_path);

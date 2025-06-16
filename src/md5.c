@@ -117,3 +117,11 @@ void md5_init(t_md5_ctx* ctx)
     ctx->c = 0x98BADCFE;
     ctx->d = 0x10325476;
 }
+
+void md5_str(const char* str, usize len, u8* digest)
+{
+    t_md5_ctx ctx;
+    md5_init(&ctx);
+    md5_update(&ctx, (const u8*)str, len);
+    md5_final(&ctx, digest);
+}
