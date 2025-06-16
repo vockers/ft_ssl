@@ -36,28 +36,10 @@ static const u32 md5_s[64] =
 };
 // clang-format on
 
-ssize_t md5_handle_padding(t_md5_ctx* ctx, u8* buffer, ssize_t bytes_read, ssize_t total_bytes_read)
+static void md5_block(t_md5_ctx* ctx0)
 {
-    int padding_zeroes;
-    if (bytes_read % MD5_BLOCK_SIZE > 55) {
-        padding_zeroes = 128 - (bytes_read % MD5_BLOCK_SIZE) - 9;
-    } else {
-        padding_zeroes = 64 - (bytes_read % MD5_BLOCK_SIZE) - 9;
-    }
-
-    buffer[bytes_read] = 0x80; // Add the 1 bit
-    ft_memset(buffer + bytes_read + 1, 0, padding_zeroes);
-
-    // Append the length of the original message in bits
-    *(size_t*)(&buffer[bytes_read + padding_zeroes + 1]) = total_bytes_read * 8;
-
-    return bytes_read + padding_zeroes + 9; // Return the total size of the padded block
-}
-
-void md5_block(t_md5_ctx* ctx0, const u8* block)
-{
-    u32*      m   = (u32*)block;
-    t_md5_ctx ctx = *ctx0; // Save the initial state
+    u32*      m   = (u32*)ctx0->buffer; // Pointer to the message block
+    t_md5_ctx ctx = *ctx0;              // Save the initial state
 
     for (int i = 0; i < 64; i++) {
         u32 f, g;
@@ -89,8 +71,47 @@ void md5_block(t_md5_ctx* ctx0, const u8* block)
     ctx0->d += ctx.d;
 }
 
+void md5_update(t_md5_ctx* ctx, const u8* data, usize len)
+{
+    ctx->msg_len += len;
+
+    while (len > 0) {
+        usize to_copy =
+            MD5_BLOCK_SIZE - ctx->buffer_len > len ? len : MD5_BLOCK_SIZE - ctx->buffer_len;
+        ft_memcpy(ctx->buffer + ctx->buffer_len, data, to_copy);
+        data += to_copy;
+        ctx->buffer_len += to_copy;
+        len -= to_copy;
+        if (ctx->buffer_len == MD5_BLOCK_SIZE) {
+            md5_block(ctx);
+            ctx->buffer_len = 0;
+        }
+    }
+}
+
+void md5_final(t_md5_ctx* ctx, u8* digest)
+{
+    // Handle padding
+    ctx->buffer[ctx->buffer_len++] = 0x80; // Append a single '1' bit
+    ft_bzero(ctx->buffer + ctx->buffer_len, MD5_BLOCK_SIZE - ctx->buffer_len);
+    if (ctx->buffer_len > MD5_BLOCK_SIZE - MD5_LENGTH_SIZE) {
+        // If the msg length doesn't fit in the current block, process it
+        md5_block(ctx);
+        ft_bzero(ctx->buffer, MD5_BLOCK_SIZE);
+    }
+
+    *(u64*)(ctx->buffer + MD5_BLOCK_SIZE - MD5_LENGTH_SIZE) = ctx->msg_len * 8;
+
+    md5_block(ctx); // Process the final block
+
+    // Copy the final digest to the output buffer
+    ft_memcpy(digest, &ctx->a, MD5_BLOCK_SIZE);
+}
+
 void md5_init(t_md5_ctx* ctx)
 {
+    ft_bzero(ctx, sizeof(t_md5_ctx));
+
     ctx->a = 0x67452301;
     ctx->b = 0xEFCDAB89;
     ctx->c = 0x98BADCFE;

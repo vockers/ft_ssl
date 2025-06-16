@@ -25,17 +25,9 @@ i32 cmd_md5(i32 argc, char* argv[])
 
     const char* file_path = index != -1 ? argv[index] : NULL;
 
-    printf("p: %d, q: %d, r: %d, s: %s, file_path: %s\n",
-           p,
-           q,
-           r,
-           s ? s : "NULL",
-           file_path ? file_path : "NULL");
-    return 0;
-
     int       fd = STDIN_FILENO;
     t_md5_ctx ctx;
-    u8        buffer[MD5_BLOCK_SIZE * 2]; // Twice the block size to handle padding
+    u8        buffer[BUFFER_SIZE];
 
     if (file_path && (fd = open(file_path, O_RDONLY)) < 0) {
         perror(file_path);
@@ -46,27 +38,18 @@ i32 cmd_md5(i32 argc, char* argv[])
     md5_init(&ctx);
 
     ssize_t bytes_read;
-    ssize_t total_bytes_read = 0;
 
-    while ((bytes_read = read(fd, buffer, MD5_BLOCK_SIZE)) == MD5_BLOCK_SIZE) {
-        total_bytes_read += bytes_read;
-        md5_block(&ctx, buffer);
+    while ((bytes_read = read(fd, buffer, BUFFER_SIZE)) > 0) {
+        md5_update(&ctx, buffer, bytes_read);
     }
 
-    ssize_t padded_block_size =
-        md5_handle_padding(&ctx, buffer, bytes_read, total_bytes_read + bytes_read);
-    md5_block(&ctx, buffer); // Process the last block
-    // If the last block couldn't fit the padding, process the next block
-    if (padded_block_size == MD5_BLOCK_SIZE * 2) {
-        md5_block(&ctx, buffer + MD5_BLOCK_SIZE);
-    }
+    u8 output[MD5_DIGEST_SIZE];
+    md5_final(&ctx, output);
 
-    // Print the final MD5 hash digest
-    ctx.a = ft_bswap32(ctx.a);
-    ctx.b = ft_bswap32(ctx.b);
-    ctx.c = ft_bswap32(ctx.c);
-    ctx.d = ft_bswap32(ctx.d);
-    printf("%.8x%.8x%.8x%.8x\n", ctx.a, ctx.b, ctx.c, ctx.d);
+    for (int i = 0; i < MD5_DIGEST_SIZE; i++) {
+        printf("%02x", output[i]);
+    }
+    printf("\n");
 
     if (fd != STDIN_FILENO)
         close(fd);
