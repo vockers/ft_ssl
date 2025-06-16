@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cli.h"
+#include "hash.h"
 #include "utils.h"
 
 #define MAX_NUM_SIZE    sizeof(u64)
@@ -25,35 +26,6 @@ typedef struct s_rsa_privkey
     u64 dmq1; // d mod (q - 1)
     u64 iqmp; // q^-1 mod p
 } t_rsa_privkey;
-
-#define MD5_BLOCK_SIZE    64 // 512 bits
-#define MD5_LENGTH_SIZE   8  // 64 bits (for padding)
-#define MD5_DIGEST_SIZE   16 // 128 bits
-#define SHA256_BLOCK_SIZE 64 // 512 bits
-
-#define LEFT_ROTATE(n, d)  ((n << d) | (n >> (32 - d)))
-#define RIGHT_ROTATE(n, d) ((n >> d) | (n << (32 - d)))
-
-typedef struct s_dgst_opt
-{
-    bool  p; // echo STDIN to STDOUT and append the checksum to STDOUT
-    bool  q; // quiet mode, only print the checksum
-    bool  r; // reverse the format of the output
-    char* s; // print the checksum of the given string
-} t_dgst_opt;
-
-typedef struct s_md5_ctx
-{
-    u32   a, b, c, d;             // MD5 state variables
-    u8    buffer[MD5_BLOCK_SIZE]; // Buffer for the current block
-    usize buffer_len;             // Length of the current block
-    usize msg_len;                // Length of the original message
-} t_md5_ctx;
-
-typedef struct s_sha256_ctx
-{
-    u32 a, b, c, d, e, f, g, h; // SHA-256 state variables
-} t_sha256_ctx;
 
 /**
  * @brief Modular exponentiation.
@@ -101,12 +73,6 @@ u64 gen_prime(u32 bits, bool verbose);
 i32 cmd_prime(u64 num, bool generate, u32 bits);
 
 int cmd_rsa();
-
-// MD5
-void md5_init(t_md5_ctx* ctx);
-void md5_update(t_md5_ctx* ctx, const u8* data, usize len);
-void md5_final(t_md5_ctx* ctx, u8* digest);
-void md5_str(const char* str, usize len, u8* digest);
 
 // SHA-256
 int cmd_sha256(const char* file_path);

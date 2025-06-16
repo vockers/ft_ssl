@@ -11,4 +11,4 @@ typedef struct s_cli_cmd
 
 i32 cli_run(i32 argc, char* argv[]);
 
-i32 cmd_md5(i32 argc, char* argv[]);
+i32 cmd_hash(i32 argc, char* argv[]);

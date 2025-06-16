@@ -4,7 +4,7 @@
 
 // clang-format off
 struct s_cli_cmd g_cli_cmds[] = {
-    {"md5", cmd_md5, "compute MD5 hash"},
+    {"md5", cmd_hash, "compute MD5 hash"},
     {NULL}
 };
 // clang-format on
