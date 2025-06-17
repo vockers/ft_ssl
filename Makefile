@@ -22,8 +22,8 @@ SRCS = asn1.c \
 	   prime.c \
 	   rand.c \
 	   rsa.c \
-	   md5.c \
-	   sha256.c \
+	   hash/md5.c \
+	   hash/sha256.c \
 	   cli/cli.c \
 	   cli/cmd_hash.c
 OBJS = $(patsubst %.c,$(OBJ_DIR)/%.o,$(SRCS))

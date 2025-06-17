@@ -116,7 +116,6 @@ i32 cmd_hash(i32 argc, char* argv[])
         ssize_t bytes_read;
         while ((bytes_read = read(STDIN_FILENO, buffer, BUFFER_SIZE)) > 0) {
             if (!opt.q && opt.p) {
-                // write(STDOUT_FILENO, buffer, bytes_read);
                 char* tmp = input;
                 input     = ft_strnjoin(input, (const char*)buffer, ft_strlen(input), bytes_read);
                 free(tmp);
