@@ -105,7 +105,7 @@ void md5_final(t_md5_ctx* ctx, u8* digest)
     md5_block(ctx); // Process the final block
 
     // Copy the final digest to the output buffer
-    ft_memcpy(digest, &ctx->a, MD5_BLOCK_SIZE);
+    ft_memcpy(digest, &ctx->a, MD5_DIGEST_SIZE);
 }
 
 void md5_init(t_md5_ctx* ctx)

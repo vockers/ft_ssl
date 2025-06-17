@@ -2,10 +2,12 @@
 
 #include "utils.h"
 
-#define MD5_BLOCK_SIZE    64 // 512 bits
-#define MD5_LENGTH_SIZE   8  // 64 bits (for padding)
-#define MD5_DIGEST_SIZE   16 // 128 bits
-#define SHA256_BLOCK_SIZE 64 // 512 bits
+#define MD5_BLOCK_SIZE     64 // 512 bits
+#define MD5_LENGTH_SIZE    8  // 64 bits (for padding)
+#define MD5_DIGEST_SIZE    16 // 128 bits
+#define SHA256_BLOCK_SIZE  64 // 512 bits
+#define SHA256_LENGTH_SIZE 8  // 64 bits (for padding)
+#define SHA256_DIGEST_SIZE 32 // 256 bits
 
 typedef struct s_hash_opt
 {
@@ -25,7 +27,10 @@ typedef struct s_md5_ctx
 
 typedef struct s_sha256_ctx
 {
-    u32 a, b, c, d, e, f, g, h; // SHA-256 state variables
+    u32   a, b, c, d, e, f, g, h;    // SHA-256 state variables
+    u8    buffer[SHA256_BLOCK_SIZE]; // Buffer for the current block
+    usize buffer_len;                // Length of the current block
+    usize msg_len;                   // Length of the original message
 } t_sha256_ctx;
 
 // clang-format off
@@ -50,3 +55,9 @@ void md5_init(t_md5_ctx* ctx);
 void md5_update(t_md5_ctx* ctx, const u8* data, usize len);
 void md5_final(t_md5_ctx* ctx, u8* digest);
 void md5_str(const char* str, usize len, u8* digest);
+
+// SHA-256
+void sha256_init(t_sha256_ctx* ctx);
+void sha256_update(t_sha256_ctx* ctx, const u8* data, usize len);
+void sha256_final(t_sha256_ctx* ctx, u8* digest);
+void sha256_str(const char* str, usize len, u8* digest);

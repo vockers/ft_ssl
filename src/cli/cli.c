@@ -5,6 +5,7 @@
 // clang-format off
 struct s_cli_cmd g_cli_cmds[] = {
     {"md5", cmd_hash, "compute MD5 hash"},
+    {"sha256", cmd_hash, "compute SHA-256 hash"},
     {NULL}
 };
 // clang-format on

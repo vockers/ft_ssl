@@ -20,27 +20,17 @@ static const u32 sha256_k[64] = {
     0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
     0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3,
     0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
-	0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5,
     0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
     0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
-	0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
+    0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
 };
 // clang-format on
 
-static void sha256_init(t_sha256_ctx* ctx)
+static void sha256_block(t_sha256_ctx* ctx0)
 {
-    ctx->a = 0x6a09e667;
-    ctx->b = 0xbb67ae85;
-    ctx->c = 0x3c6ef372;
-    ctx->d = 0xa54ff53a;
-    ctx->e = 0x510e527f;
-    ctx->f = 0x9b05688c;
-    ctx->g = 0x1f83d9ab;
-    ctx->h = 0x5be0cd19;
-}
+    u8* block = ctx0->buffer;
 
-static void sha256_block(t_sha256_ctx* ctx0, const u8* block)
-{
     u32 w[64];
     for (i32 i = 0; i < 16; i++) {
         w[i] = (block[i * 4] << 24) | (block[i * 4 + 1] << 16) | (block[i * 4 + 2] << 8) |
@@ -83,67 +73,70 @@ static void sha256_block(t_sha256_ctx* ctx0, const u8* block)
     ctx0->h += ctx.h;
 }
 
-static ssize_t sha256_handle_padding(u8* buffer, ssize_t bytes_read, ssize_t total_bytes_read)
+void sha256_init(t_sha256_ctx* ctx)
 {
-    int padding_zeroes;
-    if (bytes_read % SHA256_BLOCK_SIZE > 55) {
-        padding_zeroes = 128 - (bytes_read % 64) - 9;
-    } else {
-        padding_zeroes = SHA256_BLOCK_SIZE - (bytes_read % 64) - 9;
-    }
+    ft_bzero(ctx, sizeof(t_sha256_ctx));
 
-    buffer[bytes_read] = 0x80; // Add the 1 bit
-    ft_memset(buffer + bytes_read + 1, 0, padding_zeroes);
-
-    // Append the length of the original message in bits
-    *(size_t*)(&buffer[bytes_read + padding_zeroes + 1]) = ft_bswap64(total_bytes_read * 8);
-
-    return bytes_read + padding_zeroes + 9; // Return the total size of the padded block
+    ctx->a = 0x6a09e667;
+    ctx->b = 0xbb67ae85;
+    ctx->c = 0x3c6ef372;
+    ctx->d = 0xa54ff53a;
+    ctx->e = 0x510e527f;
+    ctx->f = 0x9b05688c;
+    ctx->g = 0x1f83d9ab;
+    ctx->h = 0x5be0cd19;
 }
 
-int cmd_sha256(const char* file_path)
+void sha256_update(t_sha256_ctx* ctx, const u8* data, usize len)
 {
-    int          fd = STDIN_FILENO;
+    ctx->msg_len += len;
+
+    while (len > 0) {
+        usize to_copy =
+            SHA256_BLOCK_SIZE - ctx->buffer_len > len ? len : SHA256_BLOCK_SIZE - ctx->buffer_len;
+        ft_memcpy(ctx->buffer + ctx->buffer_len, data, to_copy);
+        data += to_copy;
+        ctx->buffer_len += to_copy;
+        len -= to_copy;
+        if (ctx->buffer_len == SHA256_BLOCK_SIZE) {
+            sha256_block(ctx);
+            ctx->buffer_len = 0;
+        }
+    }
+}
+
+void sha256_final(t_sha256_ctx* ctx, u8* digest)
+{
+    // Handle padding
+    ctx->buffer[ctx->buffer_len++] = 0x80; // Append a single '1' bit
+    ft_bzero(ctx->buffer + ctx->buffer_len, SHA256_BLOCK_SIZE - ctx->buffer_len);
+    if (ctx->buffer_len > SHA256_BLOCK_SIZE - SHA256_LENGTH_SIZE) {
+        // If the msg length doesn't fit in the current block, process it
+        sha256_block(ctx);
+        ft_bzero(ctx->buffer, SHA256_BLOCK_SIZE);
+    }
+
+    *(u64*)(ctx->buffer + SHA256_BLOCK_SIZE - SHA256_LENGTH_SIZE) = ft_bswap64(ctx->msg_len * 8);
+
+    sha256_block(ctx); // Process the final block
+
+    ctx->a = ft_bswap32(ctx->a);
+    ctx->b = ft_bswap32(ctx->b);
+    ctx->c = ft_bswap32(ctx->c);
+    ctx->d = ft_bswap32(ctx->d);
+    ctx->e = ft_bswap32(ctx->e);
+    ctx->f = ft_bswap32(ctx->f);
+    ctx->g = ft_bswap32(ctx->g);
+    ctx->h = ft_bswap32(ctx->h);
+
+    // Copy the final digest to the output buffer
+    ft_memcpy(digest, &ctx->a, SHA256_DIGEST_SIZE);
+}
+
+void sha256_str(const char* str, usize len, u8* digest)
+{
     t_sha256_ctx ctx;
-    u8           buffer[SHA256_BLOCK_SIZE * 2]; // Twice the block size to handle padding
-
-    if (file_path && (fd = open(file_path, O_RDONLY)) < 0) {
-        perror(file_path);
-        return -1;
-    }
-
-    // Initialize SHA-256 context
     sha256_init(&ctx);
-
-    ssize_t bytes_read;
-    ssize_t total_bytes_read = 0;
-
-    while ((bytes_read = read(fd, buffer, SHA256_BLOCK_SIZE)) == SHA256_BLOCK_SIZE) {
-        total_bytes_read += bytes_read;
-        sha256_block(&ctx, buffer);
-    }
-
-    ssize_t padded_block_size =
-        sha256_handle_padding(buffer, bytes_read, total_bytes_read + bytes_read);
-    sha256_block(&ctx, buffer); // Process the last block
-    // If the last block couldn't fit the padding, process the next block
-    if (padded_block_size == SHA256_BLOCK_SIZE * 2) {
-        sha256_block(&ctx, buffer + SHA256_BLOCK_SIZE);
-    }
-
-    // Output the final hash
-    printf("%.8x%.8x%.8x%.8x%.8x%.8x%.8x%.8x\n",
-           ctx.a,
-           ctx.b,
-           ctx.c,
-           ctx.d,
-           ctx.e,
-           ctx.f,
-           ctx.g,
-           ctx.h);
-
-    if (fd != STDIN_FILENO)
-        close(fd);
-
-    return 0;
+    sha256_update(&ctx, (const u8*)str, len);
+    sha256_final(&ctx, digest);
 }
