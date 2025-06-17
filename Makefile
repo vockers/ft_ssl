@@ -10,7 +10,7 @@ LIBFT_DIR	= ./libft
 LIBFT		= ./libft/build/libft.a
 
 CC          = clang
-CFLAGS      = -I$(INCLUDE_DIR) -I$(LIBFT_DIR) # -Wall -Wextra -Werror
+CFLAGS      = -I$(INCLUDE_DIR) -I$(LIBFT_DIR) -Wall -Wextra -Werror
 LDFLAGS		= -L$(LIBFT_DIR)/build -lft
 DEBUG_FLAGS = -MMD -MP -g -fsanitize=address
 TEST_FLAGS  = -lcriterion

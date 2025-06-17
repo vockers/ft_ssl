@@ -8,7 +8,7 @@
 #include "libft.h"
 
 // clang-format off
-static const t_hash_algo g_hash_algos[2] = {
+static const t_hash_algo g_hash_algos[] = {
 {
         .name        = "MD5",
         .digest_size = MD5_DIGEST_SIZE,
@@ -27,14 +27,15 @@ static const t_hash_algo g_hash_algos[2] = {
         .str         = sha256_str,
         .ctx_size    = sizeof(t_sha256_ctx)
     },
+    {NULL, 0, NULL, NULL, NULL, NULL, 0},
 };
 // clang-format on
 
 const t_hash_algo* get_hash_algo(const char* name)
 {
-    for (usize i = 0; i < sizeof(g_hash_algos) / sizeof(t_hash_algo); i++) {
-        if (ft_strcasecmp(name, g_hash_algos[i].name) == 0) {
-            return &g_hash_algos[i];
+    for (const t_hash_algo* algo = g_hash_algos; algo->name; ++algo) {
+        if (ft_strcasecmp(name, algo->name) == 0) {
+            return algo;
         }
     }
     return NULL;
@@ -98,7 +99,7 @@ i32 cmd_hash(i32 argc, char* argv[])
         {FT_ARGP_OPT_BOOL,   NULL, 'q', &opt.q, "quiet mode, only print the checksum"},
         {FT_ARGP_OPT_BOOL,   NULL, 'r', &opt.r, "reverse the format of the output"},
         {FT_ARGP_OPT_STRING, NULL, 's', &opt.s, "print the checksum of the given string"},
-        {FT_ARGP_OPT_END}
+        {FT_ARGP_OPT_END,    NULL, 0,   NULL,   NULL},
     };
     // clang-format on
     ft_argp_parse(argc, argv, &arg_index, opts);
@@ -106,13 +107,16 @@ i32 cmd_hash(i32 argc, char* argv[])
     u8 buffer[BUFFER_SIZE]; // Buffer for reading input data
     if (opt.p || (arg_index == -1 && !opt.s)) {
         algo->init(ctx);
-        ssize_t bytes_read;
 
-        if (!opt.q && opt.p)
-            ft_printf("(\"");
+        char* input = ft_strdup("");
+
+        ssize_t bytes_read;
         while ((bytes_read = read(STDIN_FILENO, buffer, BUFFER_SIZE)) > 0) {
             if (!opt.q && opt.p) {
-                write(STDOUT_FILENO, buffer, bytes_read);
+                // write(STDOUT_FILENO, buffer, bytes_read);
+                char* tmp = input;
+                input     = ft_strnjoin(input, (const char*)buffer, ft_strlen(input), bytes_read);
+                free(tmp);
             }
             algo->update(ctx, buffer, bytes_read);
         }
@@ -121,10 +125,12 @@ i32 cmd_hash(i32 argc, char* argv[])
 
         if (!opt.q) {
             if (opt.p)
-                ft_printf("\")= ");
+                ft_printf(" (\"%s\")= ", input);
             else
                 ft_printf(" (stdin)= ");
         }
+
+        free(input);
 
         print_bytes(digest, algo->digest_size);
         ft_printf("\n");

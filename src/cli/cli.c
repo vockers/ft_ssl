@@ -6,14 +6,25 @@
 struct s_cli_cmd g_cli_cmds[] = {
     {"md5", cmd_hash, "compute MD5 hash"},
     {"sha256", cmd_hash, "compute SHA-256 hash"},
-    {NULL}
+    {NULL, NULL, NULL},
 };
 // clang-format on
+
+static void print_help()
+{
+    ft_printf("\nCommands:\n");
+    for (t_cli_cmd* cmd = g_cli_cmds; cmd->name; ++cmd) {
+        ft_printf("%s\n", cmd->name);
+    }
+
+    ft_printf("\nFlags:\n");
+    ft_printf("-p -q -r -s\n");
+}
 
 i32 cli_run(i32 argc, char* argv[])
 {
     if (argc < 2) {
-        ft_putstr_fd("Usage: ft_ssl command [options] [args]\n", STDERR_FILENO);
+        ft_putstr_fd("usage: ft_ssl command [flags] [file/string]", STDERR_FILENO);
         return EXIT_FAILURE;
     }
 
@@ -27,6 +38,7 @@ i32 cli_run(i32 argc, char* argv[])
 
     if (!cli_cmd->name) {
         ft_dprintf(STDERR_FILENO, "ft_ssl: Error: '%s' is an invalid command.\n", cmd_name);
+        print_help();
         return EXIT_FAILURE;
     }
 

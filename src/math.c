@@ -35,31 +35,34 @@ u64 powmod(u64 x, u64 y, u64 mod)
     return ret;
 }
 
-u64 gcd(u64 a, u64 b) {
+u64 gcd(u64 a, u64 b)
+{
     while (b) {
         u64 t = b;
-        b = a % b;
-        a = t;
+        b     = a % b;
+        a     = t;
     }
     return a;
 }
 
-u64 lcm(u64 a, u64 b) {
+u64 lcm(u64 a, u64 b)
+{
     return (a / gcd(a, b)) * b;
 }
 
-u64 mod_inverse(u64 e, u64 lambda) {
-    u64 d = 0, x1 = 0, x2 = 1, y1 = 1, temp;
+u64 mod_inverse(u64 e, u64 lambda)
+{
+    u64 x1 = 0, x2 = 1, temp;
     u64 phi = lambda;
 
     while (e > 0) {
         u64 quotient = phi / e;
-        temp = e;
-        e = phi % e;
-        phi = temp;
-        temp = x2;
-        x2 = x1 - quotient * x2;
-        x1 = temp;
+        temp         = e;
+        e            = phi % e;
+        phi          = temp;
+        temp         = x2;
+        x2           = x1 - quotient * x2;
+        x1           = temp;
     }
     if (phi == 1) {
         return (x1 + lambda) % lambda;

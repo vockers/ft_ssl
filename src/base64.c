@@ -15,7 +15,7 @@ char* base64_encode(const u8* data, usize input_length)
         return NULL;
     }
 
-    for (int i = 0, j = 0; i < input_length;) {
+    for (usize i = 0, j = 0; i < input_length;) {
         u32 octet_a = (u8)data[i++];
         u32 octet_b = i < input_length ? (u8)data[i++] : 0;
         u32 octet_c = i < input_length ? (u8)data[i++] : 0;
@@ -29,7 +29,7 @@ char* base64_encode(const u8* data, usize input_length)
     }
 
     // Add padding if input_length is not a multiple of 3
-    for (int i = 0; i < (3 - (input_length % 3)) % 3; i++)
+    for (usize i = 0; i < (3 - (input_length % 3)) % 3; i++)
         output[output_length - 1 - i] = '=';
 
     output[output_length] = '\0';
