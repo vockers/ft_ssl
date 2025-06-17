@@ -23,12 +23,12 @@ static void print_help()
 
 i32 cli_run(i32 argc, char* argv[])
 {
-    if (argc < 2) {
+    if (argc < 1) {
         ft_putstr_fd("usage: ft_ssl command [flags] [file/string]", STDERR_FILENO);
         return EXIT_FAILURE;
     }
 
-    const char* cmd_name = argv[1];
+    const char* cmd_name = argv[0];
     t_cli_cmd*  cli_cmd;
     for (cli_cmd = g_cli_cmds; cli_cmd->name; ++cli_cmd) {
         if (ft_strcmp(cli_cmd->name, cmd_name) == 0) {
@@ -42,7 +42,7 @@ i32 cli_run(i32 argc, char* argv[])
         return EXIT_FAILURE;
     }
 
-    cli_cmd->func(--argc, ++argv);
+    cli_cmd->func(argc, argv);
 
     return EXIT_SUCCESS;
 }

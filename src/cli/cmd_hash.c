@@ -78,6 +78,22 @@ i32 cmd_hash(i32 argc, char* argv[])
         return -1;
     }
 
+    t_hash_opt opt;
+    int        arg_index;
+    // clang-format off
+    const t_argp_option opts[] = {
+        {FT_ARGP_OPT_BOOL,   NULL, 'p', &opt.p, "echo STDIN to STDOUT and append the checksum to STDOUT"},
+        {FT_ARGP_OPT_BOOL,   NULL, 'q', &opt.q, "quiet mode, only print the checksum"},
+        {FT_ARGP_OPT_BOOL,   NULL, 'r', &opt.r, "reverse the format of the output"},
+        {FT_ARGP_OPT_STRING, NULL, 's', &opt.s, "print the checksum of the given string"},
+        {FT_ARGP_OPT_END,    NULL, 0,   NULL,   NULL},
+    };
+    // clang-format on
+
+    if ((ft_argp_parse(argc, argv, &arg_index, opts) != ARGP_SUCCESS)) {
+        return -1;
+    }
+
     void* ctx = malloc(algo->ctx_size);
     if (!ctx) {
         error(0, errno, "hash context allocation failed");
@@ -90,19 +106,6 @@ i32 cmd_hash(i32 argc, char* argv[])
         free(ctx);
         return -1;
     }
-
-    t_hash_opt opt;
-    int        arg_index;
-    // clang-format off
-    const t_argp_option opts[] = {
-        {FT_ARGP_OPT_BOOL,   NULL, 'p', &opt.p, "echo STDIN to STDOUT and append the checksum to STDOUT"},
-        {FT_ARGP_OPT_BOOL,   NULL, 'q', &opt.q, "quiet mode, only print the checksum"},
-        {FT_ARGP_OPT_BOOL,   NULL, 'r', &opt.r, "reverse the format of the output"},
-        {FT_ARGP_OPT_STRING, NULL, 's', &opt.s, "print the checksum of the given string"},
-        {FT_ARGP_OPT_END,    NULL, 0,   NULL,   NULL},
-    };
-    // clang-format on
-    ft_argp_parse(argc, argv, &arg_index, opts);
 
     u8 buffer[BUFFER_SIZE]; // Buffer for reading input data
     if (opt.p || (arg_index == -1 && !opt.s)) {
