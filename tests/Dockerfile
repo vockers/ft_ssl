@@ -16,6 +16,7 @@ COPY ../. .
 RUN clang -g -I./libft -I./include -o test \
     src/hash/md5.c \
     src/hash/sha256.c \
+    src/hash/whirlpool.c \
     src/base64.c \
     tests/base64_tests.c \
     tests/hash_tests.c \

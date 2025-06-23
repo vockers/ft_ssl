@@ -9,8 +9,8 @@ void test_hash_str(const char* str,
                    usize       digest_size,
                    void (*hash_func)(const char*, usize, u8*))
 {
-    u8   digest[SHA256_DIGEST_SIZE];
-    char digest_str[SHA256_DIGEST_SIZE * 2 + 1];
+    u8   digest[WHIRLPOOL_DIGEST_SIZE];
+    char digest_str[WHIRLPOOL_DIGEST_SIZE * 2 + 1];
 
     hash_func(str, ft_strlen(str), digest);
     for (size_t i = 0; i < digest_size; i++) {
@@ -24,6 +24,8 @@ void test_hash_str(const char* str,
 
 #define TEST_MD5(str, expected)    test_hash_str(str, expected, MD5_DIGEST_SIZE, md5_str)
 #define TEST_SHA256(str, expected) test_hash_str(str, expected, SHA256_DIGEST_SIZE, sha256_str)
+#define TEST_WHIRLPOOL(str, expected) \
+    test_hash_str(str, expected, WHIRLPOOL_DIGEST_SIZE, whirlpool_str)
 
 Test(md5, test_md5)
 {
@@ -46,4 +48,17 @@ Test(sha256, test_sha256)
                 "ef537f25c895bfa782526529a9b63d97aa631564d5d789c2b765448c8635fb6c");
     TEST_SHA256("Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
                 "a58dd8680234c1f8cc2ef2b325a43733605a7f16f288e072de8eae81fd8d6433");
+}
+
+Test(whirlpool, test_whirlpool)
+{
+    TEST_WHIRLPOOL("",
+                   "19fa61d75522a4669b44e39c1d2e1726c530232130d407f89afee0964997f7a73e83be698b288fe"
+                   "bcf88e3e03c4f0757ea8964e59b63d93708b138cc42a66eb3");
+    TEST_WHIRLPOOL("The quick brown fox jumps over the lazy dog",
+                   "b97de512e91e3828b40d2b0fdce9ceb3c4a71f9bea8d88e75c4fa854df36725fd2b52eb6544edca"
+                   "cd6f8beddfea403cb55ae31f03ad62a5ef54e42ee82c3fb35");
+    TEST_WHIRLPOOL("Hello, World!",
+                   "3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec44076ce7a8f7b"
+                   "fa497e4d9dcb7c29337173f78d06791f3c3d9e00cc6017f0b");
 }
