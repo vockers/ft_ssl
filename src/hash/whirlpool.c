@@ -556,14 +556,28 @@ static const u64 rc[ROUNDS + 1] = {
     0xca2dbf07ad5a8333ULL,
 };
 
+static u64 whirlpool_mds(i32 row, const u64* matrix)
+{
+    // clang-format off
+    return C0[(matrix[(row + 0) % 8] >> 56) & 0xFF] ^
+           C1[(matrix[(row + 7) % 8] >> 48) & 0xFF] ^
+           C2[(matrix[(row + 6) % 8] >> 40) & 0xFF] ^ 
+           C3[(matrix[(row + 5) % 8] >> 32) & 0xFF] ^
+           C4[(matrix[(row + 4) % 8] >> 24) & 0xFF] ^
+           C5[(matrix[(row + 3) % 8] >> 16) & 0xFF] ^
+           C6[(matrix[(row + 2) % 8] >>  8) & 0xFF] ^
+           C7[(matrix[(row + 1) % 8]      ) & 0xFF];
+    // clang-format on
+}
+
 static void whirlpool_block(t_whirlpool_ctx* ctx)
 {
-    u64 key[8]; /* the round key */
+    u64 key[8];
     u64 block[8];
-    u8* buffer = ctx->buffer;
     u64 state[8];
     u64 L[8];
 
+    u8* buffer = ctx->buffer;
     // Map the buffer to 8x8 matrix
     // clang-format off
     for (i32 i = 0; i < 8; i++, buffer += 8) {
@@ -579,178 +593,37 @@ static void whirlpool_block(t_whirlpool_ctx* ctx)
     }
     // clang-format on
 
-    for (i32 i = 0; i < 8; i++) {
+    for (i32 i = 0; i < 8; ++i) {
         key[i]   = ctx->state[i];
         state[i] = block[i] ^ key[i];
     }
 
-    // clang-format off
     for (i32 r = 1; r <= ROUNDS; r++) {
         // Compute the round key (K^r) from the previous key (K^{r-1}) and the round constant
-        L[0] =
-            C0[(int)(key[0] >> 56)       ] ^
-            C1[(int)(key[7] >> 48) & 0xff] ^
-            C2[(int)(key[6] >> 40) & 0xff] ^
-            C3[(int)(key[5] >> 32) & 0xff] ^
-            C4[(int)(key[4] >> 24) & 0xff] ^
-            C5[(int)(key[3] >> 16) & 0xff] ^
-            C6[(int)(key[2] >>  8) & 0xff] ^
-            C7[(int)(key[1]      ) & 0xff] ^
-            rc[r];
-        L[1] =
-            C0[(int)(key[1] >> 56)       ] ^
-            C1[(int)(key[0] >> 48) & 0xff] ^
-            C2[(int)(key[7] >> 40) & 0xff] ^
-            C3[(int)(key[6] >> 32) & 0xff] ^
-            C4[(int)(key[5] >> 24) & 0xff] ^
-            C5[(int)(key[4] >> 16) & 0xff] ^
-            C6[(int)(key[3] >>  8) & 0xff] ^
-            C7[(int)(key[2]      ) & 0xff];
-        L[2] =
-            C0[(int)(key[2] >> 56)       ] ^
-            C1[(int)(key[1] >> 48) & 0xff] ^
-            C2[(int)(key[0] >> 40) & 0xff] ^
-            C3[(int)(key[7] >> 32) & 0xff] ^
-            C4[(int)(key[6] >> 24) & 0xff] ^
-            C5[(int)(key[5] >> 16) & 0xff] ^
-            C6[(int)(key[4] >>  8) & 0xff] ^
-            C7[(int)(key[3]      ) & 0xff];
-        L[3] =
-            C0[(int)(key[3] >> 56)       ] ^
-            C1[(int)(key[2] >> 48) & 0xff] ^
-            C2[(int)(key[1] >> 40) & 0xff] ^
-            C3[(int)(key[0] >> 32) & 0xff] ^
-            C4[(int)(key[7] >> 24) & 0xff] ^
-            C5[(int)(key[6] >> 16) & 0xff] ^
-            C6[(int)(key[5] >>  8) & 0xff] ^
-            C7[(int)(key[4]      ) & 0xff];
-        L[4] =
-            C0[(int)(key[4] >> 56)       ] ^
-            C1[(int)(key[3] >> 48) & 0xff] ^
-            C2[(int)(key[2] >> 40) & 0xff] ^
-            C3[(int)(key[1] >> 32) & 0xff] ^
-            C4[(int)(key[0] >> 24) & 0xff] ^
-            C5[(int)(key[7] >> 16) & 0xff] ^
-            C6[(int)(key[6] >>  8) & 0xff] ^
-            C7[(int)(key[5]      ) & 0xff];
-        L[5] =
-            C0[(int)(key[5] >> 56)       ] ^
-            C1[(int)(key[4] >> 48) & 0xff] ^
-            C2[(int)(key[3] >> 40) & 0xff] ^
-            C3[(int)(key[2] >> 32) & 0xff] ^
-            C4[(int)(key[1] >> 24) & 0xff] ^
-            C5[(int)(key[0] >> 16) & 0xff] ^
-            C6[(int)(key[7] >>  8) & 0xff] ^
-            C7[(int)(key[6]      ) & 0xff];
-        L[6] =
-            C0[(int)(key[6] >> 56)       ] ^
-            C1[(int)(key[5] >> 48) & 0xff] ^
-            C2[(int)(key[4] >> 40) & 0xff] ^
-            C3[(int)(key[3] >> 32) & 0xff] ^
-            C4[(int)(key[2] >> 24) & 0xff] ^
-            C5[(int)(key[1] >> 16) & 0xff] ^
-            C6[(int)(key[0] >>  8) & 0xff] ^
-            C7[(int)(key[7]      ) & 0xff];
-        L[7] =
-            C0[(int)(key[7] >> 56)       ] ^
-            C1[(int)(key[6] >> 48) & 0xff] ^
-            C2[(int)(key[5] >> 40) & 0xff] ^
-            C3[(int)(key[4] >> 32) & 0xff] ^
-            C4[(int)(key[3] >> 24) & 0xff] ^
-            C5[(int)(key[2] >> 16) & 0xff] ^
-            C6[(int)(key[1] >>  8) & 0xff] ^
-            C7[(int)(key[0]      ) & 0xff];
-        
-        for (i32 i = 0; i < 8; i++) {
+        L[0] = whirlpool_mds(0, key) ^ rc[r];
+        L[1] = whirlpool_mds(1, key);
+        L[2] = whirlpool_mds(2, key);
+        L[3] = whirlpool_mds(3, key);
+        L[4] = whirlpool_mds(4, key);
+        L[5] = whirlpool_mds(5, key);
+        L[6] = whirlpool_mds(6, key);
+        L[7] = whirlpool_mds(7, key);
+
+        for (i32 i = 0; i < 8; ++i) {
             key[i] = L[i];
         }
 
-        /*
-         * apply the r-th round transformation:
-         */
-        L[0] =
-            C0[(int)(state[0] >> 56)       ] ^
-            C1[(int)(state[7] >> 48) & 0xff] ^
-            C2[(int)(state[6] >> 40) & 0xff] ^
-            C3[(int)(state[5] >> 32) & 0xff] ^
-            C4[(int)(state[4] >> 24) & 0xff] ^
-            C5[(int)(state[3] >> 16) & 0xff] ^
-            C6[(int)(state[2] >>  8) & 0xff] ^
-            C7[(int)(state[1]      ) & 0xff] ^
-            key[0];
-        L[1] =
-            C0[(int)(state[1] >> 56)       ] ^
-            C1[(int)(state[0] >> 48) & 0xff] ^
-            C2[(int)(state[7] >> 40) & 0xff] ^
-            C3[(int)(state[6] >> 32) & 0xff] ^
-            C4[(int)(state[5] >> 24) & 0xff] ^
-            C5[(int)(state[4] >> 16) & 0xff] ^
-            C6[(int)(state[3] >>  8) & 0xff] ^
-            C7[(int)(state[2]      ) & 0xff] ^
-            key[1];
-        L[2] =
-            C0[(int)(state[2] >> 56)       ] ^
-            C1[(int)(state[1] >> 48) & 0xff] ^
-            C2[(int)(state[0] >> 40) & 0xff] ^
-            C3[(int)(state[7] >> 32) & 0xff] ^
-            C4[(int)(state[6] >> 24) & 0xff] ^
-            C5[(int)(state[5] >> 16) & 0xff] ^
-            C6[(int)(state[4] >>  8) & 0xff] ^
-            C7[(int)(state[3]      ) & 0xff] ^
-            key[2];
-        L[3] =
-            C0[(int)(state[3] >> 56)       ] ^
-            C1[(int)(state[2] >> 48) & 0xff] ^
-            C2[(int)(state[1] >> 40) & 0xff] ^
-            C3[(int)(state[0] >> 32) & 0xff] ^
-            C4[(int)(state[7] >> 24) & 0xff] ^
-            C5[(int)(state[6] >> 16) & 0xff] ^
-            C6[(int)(state[5] >>  8) & 0xff] ^
-            C7[(int)(state[4]      ) & 0xff] ^
-            key[3];
-        L[4] =
-            C0[(int)(state[4] >> 56)       ] ^
-            C1[(int)(state[3] >> 48) & 0xff] ^
-            C2[(int)(state[2] >> 40) & 0xff] ^
-            C3[(int)(state[1] >> 32) & 0xff] ^
-            C4[(int)(state[0] >> 24) & 0xff] ^
-            C5[(int)(state[7] >> 16) & 0xff] ^
-            C6[(int)(state[6] >>  8) & 0xff] ^
-            C7[(int)(state[5]      ) & 0xff] ^
-            key[4];
-        L[5] =
-            C0[(int)(state[5] >> 56)       ] ^
-            C1[(int)(state[4] >> 48) & 0xff] ^
-            C2[(int)(state[3] >> 40) & 0xff] ^
-            C3[(int)(state[2] >> 32) & 0xff] ^
-            C4[(int)(state[1] >> 24) & 0xff] ^
-            C5[(int)(state[0] >> 16) & 0xff] ^
-            C6[(int)(state[7] >>  8) & 0xff] ^
-            C7[(int)(state[6]      ) & 0xff] ^
-            key[5];
-        L[6] =
-            C0[(int)(state[6] >> 56)       ] ^
-            C1[(int)(state[5] >> 48) & 0xff] ^
-            C2[(int)(state[4] >> 40) & 0xff] ^
-            C3[(int)(state[3] >> 32) & 0xff] ^
-            C4[(int)(state[2] >> 24) & 0xff] ^
-            C5[(int)(state[1] >> 16) & 0xff] ^
-            C6[(int)(state[0] >>  8) & 0xff] ^
-            C7[(int)(state[7]      ) & 0xff] ^
-            key[6];
-        L[7] =
-            C0[(int)(state[7] >> 56)       ] ^
-            C1[(int)(state[6] >> 48) & 0xff] ^
-            C2[(int)(state[5] >> 40) & 0xff] ^
-            C3[(int)(state[4] >> 32) & 0xff] ^
-            C4[(int)(state[3] >> 24) & 0xff] ^
-            C5[(int)(state[2] >> 16) & 0xff] ^
-            C6[(int)(state[1] >>  8) & 0xff] ^
-            C7[(int)(state[0]      ) & 0xff] ^
-            key[7];
-        // clang-format on
+        // Apply the r-th round transformation:
+        L[0] = whirlpool_mds(0, state) ^ key[0];
+        L[1] = whirlpool_mds(1, state) ^ key[1];
+        L[2] = whirlpool_mds(2, state) ^ key[2];
+        L[3] = whirlpool_mds(3, state) ^ key[3];
+        L[4] = whirlpool_mds(4, state) ^ key[4];
+        L[5] = whirlpool_mds(5, state) ^ key[5];
+        L[6] = whirlpool_mds(6, state) ^ key[6];
+        L[7] = whirlpool_mds(7, state) ^ key[7];
 
-        for (i32 i = 0; i < 8; i++)
+        for (i32 i = 0; i < 8; ++i)
             state[i] = L[i];
     }
 
