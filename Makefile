@@ -20,6 +20,7 @@ SRCS = asn1.c \
 	   rsa.c \
 	   hash/md5.c \
 	   hash/sha256.c \
+	   hash/whirlpool.c \
 	   cli/cli.c \
 	   cli/cmd_hash.c
 OBJS = $(patsubst %.c,$(OBJ_DIR)/%.o,$(SRCS))

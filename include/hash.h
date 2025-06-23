@@ -2,12 +2,17 @@
 
 #include "utils.h"
 
-#define MD5_BLOCK_SIZE     64 // 512 bits
-#define MD5_LENGTH_SIZE    8  // 64 bits (for padding)
-#define MD5_DIGEST_SIZE    16 // 128 bits
+#define MD5_BLOCK_SIZE  64 // 512 bits
+#define MD5_LENGTH_SIZE 8  // 64 bits (for padding)
+#define MD5_DIGEST_SIZE 16 // 128 bits
+
 #define SHA256_BLOCK_SIZE  64 // 512 bits
 #define SHA256_LENGTH_SIZE 8  // 64 bits (for padding)
 #define SHA256_DIGEST_SIZE 32 // 256 bits
+
+#define WHIRLPOOL_BLOCK_SIZE  64 // 512 bits
+#define WHIRLPOOL_LENGTH_SIZE 32 // 256 bits (for padding)
+#define WHIRLPOOL_DIGEST_SIZE 64 // 512 bits
 
 typedef struct s_hash_opt
 {
@@ -32,6 +37,14 @@ typedef struct s_sha256_ctx
     usize buffer_len;                // Length of the current block
     usize msg_len;                   // Length of the original message
 } t_sha256_ctx;
+
+typedef struct s_whirlpool_ctx
+{
+    u64   state[8];                       // Whirlpool state variables
+    u8    buffer[WHIRLPOOL_BLOCK_SIZE];   // Buffer for the current block
+    usize buffer_len;                     // Length of the current block
+    u8    msg_len[WHIRLPOOL_LENGTH_SIZE]; // Length of the original message in bits
+} t_whirlpool_ctx;
 
 // clang-format off
 typedef struct s_hash_algo
@@ -61,3 +74,9 @@ void sha256_init(t_sha256_ctx* ctx);
 void sha256_update(t_sha256_ctx* ctx, const u8* data, usize len);
 void sha256_final(t_sha256_ctx* ctx, u8* digest);
 void sha256_str(const char* str, usize len, u8* digest);
+
+// Whirlpool
+void whirlpool_init(t_whirlpool_ctx* ctx);
+void whirlpool_update(t_whirlpool_ctx* ctx, const u8* data, usize len);
+void whirlpool_final(t_whirlpool_ctx* ctx, u8* digest);
+void whirlpool_str(const char* str, usize len, u8* digest);

@@ -18,7 +18,7 @@ static const t_hash_algo g_hash_algos[] = {
         .str         = md5_str,
         .ctx_size    = sizeof(t_md5_ctx)
     },
-{
+    {
         .name        = "SHA256",
         .digest_size = SHA256_DIGEST_SIZE,
         .init        = (void*)sha256_init,
@@ -26,6 +26,15 @@ static const t_hash_algo g_hash_algos[] = {
         .final       = (void*)sha256_final,
         .str         = sha256_str,
         .ctx_size    = sizeof(t_sha256_ctx)
+    },
+    {
+        .name        = "WHIRLPOOL",
+        .digest_size = WHIRLPOOL_DIGEST_SIZE,
+        .init        = (void*)whirlpool_init,
+        .update      = (void*)whirlpool_update,
+        .final       = (void*)whirlpool_final,
+        .str         = whirlpool_str,
+        .ctx_size    = sizeof(t_whirlpool_ctx)
     },
     {NULL, 0, NULL, NULL, NULL, NULL, 0},
 };
