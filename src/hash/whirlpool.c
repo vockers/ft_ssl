@@ -539,9 +539,10 @@ static const u64 C7[256] = {
     0x28a0285d88507528ULL, 0x5c6d5cda31b8865cULL, 0xf8c7f8933fed6bf8ULL, 0x86228644a411c286ULL,
 };
 
-#define R 10 /* number of rounds */
+#define ROUNDS 10
 
-static const u64 rc[R + 1] = {
+// The round constants for Whirlpool
+static const u64 rc[ROUNDS + 1] = {
     0x0000000000000000ULL,
     0x1823c6e887b8014fULL,
     0x36a6d2f5796f9152ULL,
@@ -557,7 +558,7 @@ static const u64 rc[R + 1] = {
 
 static void whirlpool_block(t_whirlpool_ctx* ctx)
 {
-    u64 K[8]; /* the round key */
+    u64 key[8]; /* the round key */
     u64 block[8];
     u8* buffer = ctx->buffer;
     u64 state[8];
@@ -578,101 +579,92 @@ static void whirlpool_block(t_whirlpool_ctx* ctx)
     }
     // clang-format on
 
-    state[0] = block[0] ^ (K[0] = ctx->state[0]);
-    state[1] = block[1] ^ (K[1] = ctx->state[1]);
-    state[2] = block[2] ^ (K[2] = ctx->state[2]);
-    state[3] = block[3] ^ (K[3] = ctx->state[3]);
-    state[4] = block[4] ^ (K[4] = ctx->state[4]);
-    state[5] = block[5] ^ (K[5] = ctx->state[5]);
-    state[6] = block[6] ^ (K[6] = ctx->state[6]);
-    state[7] = block[7] ^ (K[7] = ctx->state[7]);
+    for (i32 i = 0; i < 8; i++) {
+        key[i]   = ctx->state[i];
+        state[i] = block[i] ^ key[i];
+    }
 
     // clang-format off
-    for (i32 r = 1; r <= R; r++) {
-        /*
-         * compute K^r from K^{r-1}:
-         */
+    for (i32 r = 1; r <= ROUNDS; r++) {
+        // Compute the round key (K^r) from the previous key (K^{r-1}) and the round constant
         L[0] =
-            C0[(int)(K[0] >> 56)       ] ^
-            C1[(int)(K[7] >> 48) & 0xff] ^
-            C2[(int)(K[6] >> 40) & 0xff] ^
-            C3[(int)(K[5] >> 32) & 0xff] ^
-            C4[(int)(K[4] >> 24) & 0xff] ^
-            C5[(int)(K[3] >> 16) & 0xff] ^
-            C6[(int)(K[2] >>  8) & 0xff] ^
-            C7[(int)(K[1]      ) & 0xff] ^
+            C0[(int)(key[0] >> 56)       ] ^
+            C1[(int)(key[7] >> 48) & 0xff] ^
+            C2[(int)(key[6] >> 40) & 0xff] ^
+            C3[(int)(key[5] >> 32) & 0xff] ^
+            C4[(int)(key[4] >> 24) & 0xff] ^
+            C5[(int)(key[3] >> 16) & 0xff] ^
+            C6[(int)(key[2] >>  8) & 0xff] ^
+            C7[(int)(key[1]      ) & 0xff] ^
             rc[r];
         L[1] =
-            C0[(int)(K[1] >> 56)       ] ^
-            C1[(int)(K[0] >> 48) & 0xff] ^
-            C2[(int)(K[7] >> 40) & 0xff] ^
-            C3[(int)(K[6] >> 32) & 0xff] ^
-            C4[(int)(K[5] >> 24) & 0xff] ^
-            C5[(int)(K[4] >> 16) & 0xff] ^
-            C6[(int)(K[3] >>  8) & 0xff] ^
-            C7[(int)(K[2]      ) & 0xff];
+            C0[(int)(key[1] >> 56)       ] ^
+            C1[(int)(key[0] >> 48) & 0xff] ^
+            C2[(int)(key[7] >> 40) & 0xff] ^
+            C3[(int)(key[6] >> 32) & 0xff] ^
+            C4[(int)(key[5] >> 24) & 0xff] ^
+            C5[(int)(key[4] >> 16) & 0xff] ^
+            C6[(int)(key[3] >>  8) & 0xff] ^
+            C7[(int)(key[2]      ) & 0xff];
         L[2] =
-            C0[(int)(K[2] >> 56)       ] ^
-            C1[(int)(K[1] >> 48) & 0xff] ^
-            C2[(int)(K[0] >> 40) & 0xff] ^
-            C3[(int)(K[7] >> 32) & 0xff] ^
-            C4[(int)(K[6] >> 24) & 0xff] ^
-            C5[(int)(K[5] >> 16) & 0xff] ^
-            C6[(int)(K[4] >>  8) & 0xff] ^
-            C7[(int)(K[3]      ) & 0xff];
+            C0[(int)(key[2] >> 56)       ] ^
+            C1[(int)(key[1] >> 48) & 0xff] ^
+            C2[(int)(key[0] >> 40) & 0xff] ^
+            C3[(int)(key[7] >> 32) & 0xff] ^
+            C4[(int)(key[6] >> 24) & 0xff] ^
+            C5[(int)(key[5] >> 16) & 0xff] ^
+            C6[(int)(key[4] >>  8) & 0xff] ^
+            C7[(int)(key[3]      ) & 0xff];
         L[3] =
-            C0[(int)(K[3] >> 56)       ] ^
-            C1[(int)(K[2] >> 48) & 0xff] ^
-            C2[(int)(K[1] >> 40) & 0xff] ^
-            C3[(int)(K[0] >> 32) & 0xff] ^
-            C4[(int)(K[7] >> 24) & 0xff] ^
-            C5[(int)(K[6] >> 16) & 0xff] ^
-            C6[(int)(K[5] >>  8) & 0xff] ^
-            C7[(int)(K[4]      ) & 0xff];
+            C0[(int)(key[3] >> 56)       ] ^
+            C1[(int)(key[2] >> 48) & 0xff] ^
+            C2[(int)(key[1] >> 40) & 0xff] ^
+            C3[(int)(key[0] >> 32) & 0xff] ^
+            C4[(int)(key[7] >> 24) & 0xff] ^
+            C5[(int)(key[6] >> 16) & 0xff] ^
+            C6[(int)(key[5] >>  8) & 0xff] ^
+            C7[(int)(key[4]      ) & 0xff];
         L[4] =
-            C0[(int)(K[4] >> 56)       ] ^
-            C1[(int)(K[3] >> 48) & 0xff] ^
-            C2[(int)(K[2] >> 40) & 0xff] ^
-            C3[(int)(K[1] >> 32) & 0xff] ^
-            C4[(int)(K[0] >> 24) & 0xff] ^
-            C5[(int)(K[7] >> 16) & 0xff] ^
-            C6[(int)(K[6] >>  8) & 0xff] ^
-            C7[(int)(K[5]      ) & 0xff];
+            C0[(int)(key[4] >> 56)       ] ^
+            C1[(int)(key[3] >> 48) & 0xff] ^
+            C2[(int)(key[2] >> 40) & 0xff] ^
+            C3[(int)(key[1] >> 32) & 0xff] ^
+            C4[(int)(key[0] >> 24) & 0xff] ^
+            C5[(int)(key[7] >> 16) & 0xff] ^
+            C6[(int)(key[6] >>  8) & 0xff] ^
+            C7[(int)(key[5]      ) & 0xff];
         L[5] =
-            C0[(int)(K[5] >> 56)       ] ^
-            C1[(int)(K[4] >> 48) & 0xff] ^
-            C2[(int)(K[3] >> 40) & 0xff] ^
-            C3[(int)(K[2] >> 32) & 0xff] ^
-            C4[(int)(K[1] >> 24) & 0xff] ^
-            C5[(int)(K[0] >> 16) & 0xff] ^
-            C6[(int)(K[7] >>  8) & 0xff] ^
-            C7[(int)(K[6]      ) & 0xff];
+            C0[(int)(key[5] >> 56)       ] ^
+            C1[(int)(key[4] >> 48) & 0xff] ^
+            C2[(int)(key[3] >> 40) & 0xff] ^
+            C3[(int)(key[2] >> 32) & 0xff] ^
+            C4[(int)(key[1] >> 24) & 0xff] ^
+            C5[(int)(key[0] >> 16) & 0xff] ^
+            C6[(int)(key[7] >>  8) & 0xff] ^
+            C7[(int)(key[6]      ) & 0xff];
         L[6] =
-            C0[(int)(K[6] >> 56)       ] ^
-            C1[(int)(K[5] >> 48) & 0xff] ^
-            C2[(int)(K[4] >> 40) & 0xff] ^
-            C3[(int)(K[3] >> 32) & 0xff] ^
-            C4[(int)(K[2] >> 24) & 0xff] ^
-            C5[(int)(K[1] >> 16) & 0xff] ^
-            C6[(int)(K[0] >>  8) & 0xff] ^
-            C7[(int)(K[7]      ) & 0xff];
+            C0[(int)(key[6] >> 56)       ] ^
+            C1[(int)(key[5] >> 48) & 0xff] ^
+            C2[(int)(key[4] >> 40) & 0xff] ^
+            C3[(int)(key[3] >> 32) & 0xff] ^
+            C4[(int)(key[2] >> 24) & 0xff] ^
+            C5[(int)(key[1] >> 16) & 0xff] ^
+            C6[(int)(key[0] >>  8) & 0xff] ^
+            C7[(int)(key[7]      ) & 0xff];
         L[7] =
-            C0[(int)(K[7] >> 56)       ] ^
-            C1[(int)(K[6] >> 48) & 0xff] ^
-            C2[(int)(K[5] >> 40) & 0xff] ^
-            C3[(int)(K[4] >> 32) & 0xff] ^
-            C4[(int)(K[3] >> 24) & 0xff] ^
-            C5[(int)(K[2] >> 16) & 0xff] ^
-            C6[(int)(K[1] >>  8) & 0xff] ^
-            C7[(int)(K[0]      ) & 0xff];
-        K[0] = L[0];
-        K[1] = L[1];
-        K[2] = L[2];
-        K[3] = L[3];
-        K[4] = L[4];
-        K[5] = L[5];
-        K[6] = L[6];
-        K[7] = L[7];
+            C0[(int)(key[7] >> 56)       ] ^
+            C1[(int)(key[6] >> 48) & 0xff] ^
+            C2[(int)(key[5] >> 40) & 0xff] ^
+            C3[(int)(key[4] >> 32) & 0xff] ^
+            C4[(int)(key[3] >> 24) & 0xff] ^
+            C5[(int)(key[2] >> 16) & 0xff] ^
+            C6[(int)(key[1] >>  8) & 0xff] ^
+            C7[(int)(key[0]      ) & 0xff];
+        
+        for (i32 i = 0; i < 8; i++) {
+            key[i] = L[i];
+        }
+
         /*
          * apply the r-th round transformation:
          */
@@ -685,7 +677,7 @@ static void whirlpool_block(t_whirlpool_ctx* ctx)
             C5[(int)(state[3] >> 16) & 0xff] ^
             C6[(int)(state[2] >>  8) & 0xff] ^
             C7[(int)(state[1]      ) & 0xff] ^
-            K[0];
+            key[0];
         L[1] =
             C0[(int)(state[1] >> 56)       ] ^
             C1[(int)(state[0] >> 48) & 0xff] ^
@@ -695,7 +687,7 @@ static void whirlpool_block(t_whirlpool_ctx* ctx)
             C5[(int)(state[4] >> 16) & 0xff] ^
             C6[(int)(state[3] >>  8) & 0xff] ^
             C7[(int)(state[2]      ) & 0xff] ^
-            K[1];
+            key[1];
         L[2] =
             C0[(int)(state[2] >> 56)       ] ^
             C1[(int)(state[1] >> 48) & 0xff] ^
@@ -705,7 +697,7 @@ static void whirlpool_block(t_whirlpool_ctx* ctx)
             C5[(int)(state[5] >> 16) & 0xff] ^
             C6[(int)(state[4] >>  8) & 0xff] ^
             C7[(int)(state[3]      ) & 0xff] ^
-            K[2];
+            key[2];
         L[3] =
             C0[(int)(state[3] >> 56)       ] ^
             C1[(int)(state[2] >> 48) & 0xff] ^
@@ -715,7 +707,7 @@ static void whirlpool_block(t_whirlpool_ctx* ctx)
             C5[(int)(state[6] >> 16) & 0xff] ^
             C6[(int)(state[5] >>  8) & 0xff] ^
             C7[(int)(state[4]      ) & 0xff] ^
-            K[3];
+            key[3];
         L[4] =
             C0[(int)(state[4] >> 56)       ] ^
             C1[(int)(state[3] >> 48) & 0xff] ^
@@ -725,7 +717,7 @@ static void whirlpool_block(t_whirlpool_ctx* ctx)
             C5[(int)(state[7] >> 16) & 0xff] ^
             C6[(int)(state[6] >>  8) & 0xff] ^
             C7[(int)(state[5]      ) & 0xff] ^
-            K[4];
+            key[4];
         L[5] =
             C0[(int)(state[5] >> 56)       ] ^
             C1[(int)(state[4] >> 48) & 0xff] ^
@@ -735,7 +727,7 @@ static void whirlpool_block(t_whirlpool_ctx* ctx)
             C5[(int)(state[0] >> 16) & 0xff] ^
             C6[(int)(state[7] >>  8) & 0xff] ^
             C7[(int)(state[6]      ) & 0xff] ^
-            K[5];
+            key[5];
         L[6] =
             C0[(int)(state[6] >> 56)       ] ^
             C1[(int)(state[5] >> 48) & 0xff] ^
@@ -745,7 +737,7 @@ static void whirlpool_block(t_whirlpool_ctx* ctx)
             C5[(int)(state[1] >> 16) & 0xff] ^
             C6[(int)(state[0] >>  8) & 0xff] ^
             C7[(int)(state[7]      ) & 0xff] ^
-            K[6];
+            key[6];
         L[7] =
             C0[(int)(state[7] >> 56)       ] ^
             C1[(int)(state[6] >> 48) & 0xff] ^
@@ -755,26 +747,16 @@ static void whirlpool_block(t_whirlpool_ctx* ctx)
             C5[(int)(state[2] >> 16) & 0xff] ^
             C6[(int)(state[1] >>  8) & 0xff] ^
             C7[(int)(state[0]      ) & 0xff] ^
-            K[7];
-        state[0] = L[0];
-        state[1] = L[1];
-        state[2] = L[2];
-        state[3] = L[3];
-        state[4] = L[4];
-        state[5] = L[5];
-        state[6] = L[6];
-        state[7] = L[7];
-    }
-    // clang-format on
+            key[7];
+        // clang-format on
 
-    ctx->state[0] ^= state[0] ^ block[0];
-    ctx->state[1] ^= state[1] ^ block[1];
-    ctx->state[2] ^= state[2] ^ block[2];
-    ctx->state[3] ^= state[3] ^ block[3];
-    ctx->state[4] ^= state[4] ^ block[4];
-    ctx->state[5] ^= state[5] ^ block[5];
-    ctx->state[6] ^= state[6] ^ block[6];
-    ctx->state[7] ^= state[7] ^ block[7];
+        for (i32 i = 0; i < 8; i++)
+            state[i] = L[i];
+    }
+
+    // Apply Miyaguchi–Preneel compression function
+    for (i32 i = 0; i < 8; i++)
+        ctx->state[i] ^= state[i] ^ block[i];
 }
 
 void whirlpool_update(t_whirlpool_ctx* ctx, const u8* data, usize len)
