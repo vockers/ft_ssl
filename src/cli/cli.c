@@ -32,7 +32,7 @@ i32 cli_run(i32 argc, char* argv[])
     const char* cmd_name = argv[0];
     t_cli_cmd*  cli_cmd;
     for (cli_cmd = g_cli_cmds; cli_cmd->name; ++cli_cmd) {
-        if (ft_strcmp(cli_cmd->name, cmd_name) == 0) {
+        if (ft_strcasecmp(cli_cmd->name, cmd_name) == 0) {
             break;
         }
     }
