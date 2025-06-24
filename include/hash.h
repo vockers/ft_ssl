@@ -46,11 +46,18 @@ typedef struct s_whirlpool_ctx
     u8    msg_len[WHIRLPOOL_LENGTH_SIZE]; // Length of the original message in bits
 } t_whirlpool_ctx;
 
+typedef enum e_hash_algo
+{
+    HASH_ALGO_MD5,
+    HASH_ALGO_SHA256,
+    HASH_ALGO_WHIRLPOOL,
+    HASH_ALGO_UNKNOWN
+} t_hash_algo_type;
+
 // clang-format off
 typedef struct s_hash_algo
 {
-    const char* name;        // Name of the hash algorithm
-    usize       digest_size; // Size of the hash digest in bytes
+    const char* name; // Name of the hash algorithm
 
     void (*init)  (void* ctx); // Function to initialize the context
     void (*update)(void*     ctx,
@@ -59,9 +66,14 @@ typedef struct s_hash_algo
     void (*final) (void* ctx, u8* digest);                  // Function to finalize the hash and produce the digest
     void (*str)   (const char* str, usize len, u8* digest); // Function to hash a string
 
-    usize ctx_size; // Size of the context structure
+    usize digest_size; // Size of the hash digest in bytes
+    usize block_size;  // Size of the block in bytes
+    usize ctx_size;    // Size of the context structure
 } t_hash_algo;
 // clang-format on
+
+const t_hash_algo* get_hash_algo(t_hash_algo_type type);
+const t_hash_algo* find_hash_algo(const char* name);
 
 // MD5
 void md5_init(t_md5_ctx* ctx);

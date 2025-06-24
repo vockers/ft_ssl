@@ -7,49 +7,6 @@
 
 #include "libft.h"
 
-// clang-format off
-static const t_hash_algo g_hash_algos[] = {
-{
-        .name        = "MD5",
-        .digest_size = MD5_DIGEST_SIZE,
-        .init        = (void*)md5_init,
-        .update      = (void*)md5_update,
-        .final       = (void*)md5_final,
-        .str         = md5_str,
-        .ctx_size    = sizeof(t_md5_ctx)
-    },
-    {
-        .name        = "SHA256",
-        .digest_size = SHA256_DIGEST_SIZE,
-        .init        = (void*)sha256_init,
-        .update      = (void*)sha256_update,
-        .final       = (void*)sha256_final,
-        .str         = sha256_str,
-        .ctx_size    = sizeof(t_sha256_ctx)
-    },
-    {
-        .name        = "WHIRLPOOL",
-        .digest_size = WHIRLPOOL_DIGEST_SIZE,
-        .init        = (void*)whirlpool_init,
-        .update      = (void*)whirlpool_update,
-        .final       = (void*)whirlpool_final,
-        .str         = whirlpool_str,
-        .ctx_size    = sizeof(t_whirlpool_ctx)
-    },
-    {NULL, 0, NULL, NULL, NULL, NULL, 0},
-};
-// clang-format on
-
-const t_hash_algo* get_hash_algo(const char* name)
-{
-    for (const t_hash_algo* algo = g_hash_algos; algo->name; ++algo) {
-        if (ft_strcasecmp(name, algo->name) == 0) {
-            return algo;
-        }
-    }
-    return NULL;
-}
-
 static void print_bytes(const u8* bytes, usize size)
 {
     for (usize i = 0; i < size; i++) {
@@ -81,7 +38,7 @@ static void print_digest(
 
 i32 cmd_hash(i32 argc, char* argv[])
 {
-    const t_hash_algo* algo = get_hash_algo(argv[0]);
+    const t_hash_algo* algo = find_hash_algo(argv[0]);
     if (!algo) {
         error(0, 0, "unkown hash algorithm: %s", argv[0]);
         return -1;

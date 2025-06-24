@@ -18,6 +18,8 @@ SRCS = asn1.c \
 	   prime.c \
 	   rand.c \
 	   rsa.c \
+	   hash/hash.c \
+	   hash/hmac.c \
 	   hash/md5.c \
 	   hash/sha256.c \
 	   hash/whirlpool.c \
