@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 # Install necessary dependencies
 RUN apt-get update && apt-get install -y \
@@ -14,6 +14,9 @@ COPY ../. .
 
 # Compile the source code
 RUN clang -g -I./libft -I./include -o test \
+    src/cli/cli.c \
+    src/cli/cmd_hash.c \
+    src/hash/hash.c \
     src/hash/md5.c \
     src/hash/sha256.c \
     src/hash/whirlpool.c \

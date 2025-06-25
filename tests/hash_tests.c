@@ -1,8 +1,11 @@
 #include <criterion/criterion.h>
 #include <criterion/redirect.h>
 #include <signal.h>
+#include <stdarg.h>
 
 #include "ft_ssl.h"
+
+#include "libft.h"
 
 void test_hash_str(const char* str,
                    const char* expected,
@@ -22,10 +25,39 @@ void test_hash_str(const char* str,
         digest_str, expected, "Hash '%s' does not match expected '%s'\n", digest_str, expected);
 }
 
+void run_hash_cmd(const char* cmd, ...)
+{
+    va_list args;
+
+    va_start(args, cmd);
+    int   argc = 0;
+    char* argv[10];
+
+    while ((argv[argc] = va_arg(args, char*)) != NULL) {
+        argc++;
+        if (argc >= 10) {
+            cr_assert_fail("Too many arguments for command");
+            break;
+        }
+    }
+
+    va_end(args);
+
+    cr_assert_eq(cmd_hash(argc, argv), 0);
+}
+
 #define TEST_MD5(str, expected)    test_hash_str(str, expected, MD5_DIGEST_SIZE, md5_str)
 #define TEST_SHA256(str, expected) test_hash_str(str, expected, SHA256_DIGEST_SIZE, sha256_str)
 #define TEST_WHIRLPOOL(str, expected) \
     test_hash_str(str, expected, WHIRLPOOL_DIGEST_SIZE, whirlpool_str)
+
+#define RUN_HASH_CMD(...) run_hash_cmd(NULL, __VA_ARGS__, NULL)
+
+void redirect_std(void)
+{
+    cr_redirect_stdout();
+    cr_redirect_stderr();
+}
 
 Test(md5, test_md5)
 {
@@ -36,6 +68,42 @@ Test(md5, test_md5)
     TEST_MD5("Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
              "35899082e51edf667f14477ac000cbba");
 }
+
+Test(md5, test_md5_cmd_s, .init = redirect_std)
+{
+    RUN_HASH_CMD("md5", "-s", "Hello, World!");
+    RUN_HASH_CMD("md5", "-q", "-s", "Hello, World!");
+    RUN_HASH_CMD("md5", "-r", "-s", "Hello, World!");
+    RUN_HASH_CMD("md5", "-q", "-r", "-s", "Hello, World!");
+    cr_assert_stdout_eq_str("MD5 (\"Hello, World!\") = 65a8e27d8879283831b664bd8b7f0ad4\n"
+                            "65a8e27d8879283831b664bd8b7f0ad4\n"
+                            "65a8e27d8879283831b664bd8b7f0ad4 \"Hello, World!\"\n"
+                            "65a8e27d8879283831b664bd8b7f0ad4\n");
+}
+
+Test(md5, test_md5_cmd_file, .init = redirect_std)
+{
+    RUN_HASH_CMD("md5", "tests/files/file1.txt");
+    RUN_HASH_CMD("md5", "-q", "tests/files/file1.txt");
+    RUN_HASH_CMD("md5", "-r", "tests/files/file1.txt");
+    RUN_HASH_CMD("md5", "-q", "-r", "tests/files/file1.txt");
+    cr_assert_stdout_eq_str("MD5 (tests/files/file1.txt) = 65a8e27d8879283831b664bd8b7f0ad4\n"
+                            "65a8e27d8879283831b664bd8b7f0ad4\n"
+                            "65a8e27d8879283831b664bd8b7f0ad4 tests/files/file1.txt\n"
+                            "65a8e27d8879283831b664bd8b7f0ad4\n");
+}
+
+// Test(md5, test_md5_cmd_file_s, .init = redirect_std)
+// {
+//     RUN_HASH_CMD("md5", "-s", "Hello, World!", "tests/files/file1.txt");
+//     RUN_HASH_CMD("md5", "-q", "-s", "Hello, World!", "tests/files/file1.txt");
+//     RUN_HASH_CMD("md5", "-r", "-s", "Hello, World!", "tests/files/file1.txt");
+//     RUN_HASH_CMD("md5", "-q", "-r", "-s", "Hello, World!", "tests/files/file1.txt");
+//     cr_assert_stdout_eq_str("MD5 (\"Hello, World!\") = 65a8e27d8879283831b664bd8b7f0ad4\n"
+//                             "65a8e27d8879283831b664bd8b7f0ad4\n"
+//                             "65a8e27d8879283831b664bd8b7f0ad4 \"Hello, World!\"\n"
+//                             "65a8e27d8879283831b664bd8b7f0ad4 tests/files/file1.txt\n");
+// }
 
 Test(sha256, test_sha256)
 {
