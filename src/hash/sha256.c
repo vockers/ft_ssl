@@ -44,7 +44,7 @@ static void sha256_block(t_sha256_ctx* ctx0)
 
     t_sha256_ctx ctx = *ctx0; // Save the initial state
 
-    for (int i = 0; i < 64; i++) {
+    for (i32 i = 0; i < 64; i++) {
         u32 S1    = RIGHT_ROTATE(ctx.e, 6) ^ RIGHT_ROTATE(ctx.e, 11) ^ RIGHT_ROTATE(ctx.e, 25);
         u32 ch    = (ctx.e & ctx.f) ^ (~ctx.e & ctx.g);
         u32 temp1 = ctx.h + S1 + ch + sha256_k[i] + w[i];

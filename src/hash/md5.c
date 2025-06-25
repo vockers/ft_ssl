@@ -71,6 +71,16 @@ static void md5_block(t_md5_ctx* ctx0)
     ctx0->d += ctx.d;
 }
 
+void md5_init(t_md5_ctx* ctx)
+{
+    ft_bzero(ctx, sizeof(t_md5_ctx));
+
+    ctx->a = 0x67452301;
+    ctx->b = 0xEFCDAB89;
+    ctx->c = 0x98BADCFE;
+    ctx->d = 0x10325476;
+}
+
 void md5_update(t_md5_ctx* ctx, const u8* data, usize len)
 {
     ctx->msg_len += len;
@@ -106,16 +116,6 @@ void md5_final(t_md5_ctx* ctx, u8* digest)
 
     // Copy the final digest to the output buffer
     ft_memcpy(digest, &ctx->a, MD5_DIGEST_SIZE);
-}
-
-void md5_init(t_md5_ctx* ctx)
-{
-    ft_bzero(ctx, sizeof(t_md5_ctx));
-
-    ctx->a = 0x67452301;
-    ctx->b = 0xEFCDAB89;
-    ctx->c = 0x98BADCFE;
-    ctx->d = 0x10325476;
 }
 
 void md5_str(const char* str, usize len, u8* digest)

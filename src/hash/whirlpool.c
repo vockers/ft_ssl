@@ -575,7 +575,7 @@ static void whirlpool_block(t_whirlpool_ctx* ctx)
     u64 key[8];
     u64 block[8];
     u64 state[8];
-    u64 L[8];
+    u64 tmp[8];
 
     u8* buffer = ctx->buffer;
     // Map the buffer to 8x8 matrix
@@ -600,31 +600,23 @@ static void whirlpool_block(t_whirlpool_ctx* ctx)
 
     for (i32 r = 1; r <= ROUNDS; r++) {
         // Compute the round key (K^r) from the previous key (K^{r-1}) and the round constant
-        L[0] = whirlpool_mds(0, key) ^ rc[r];
-        L[1] = whirlpool_mds(1, key);
-        L[2] = whirlpool_mds(2, key);
-        L[3] = whirlpool_mds(3, key);
-        L[4] = whirlpool_mds(4, key);
-        L[5] = whirlpool_mds(5, key);
-        L[6] = whirlpool_mds(6, key);
-        L[7] = whirlpool_mds(7, key);
+        for (i32 i = 0; i < 8; ++i) {
+            tmp[i] = whirlpool_mds(i, key);
+        }
+        // XOR first row with round constant
+        tmp[0] ^= rc[r];
 
         for (i32 i = 0; i < 8; ++i) {
-            key[i] = L[i];
+            key[i] = tmp[i];
         }
 
         // Apply the r-th round transformation:
-        L[0] = whirlpool_mds(0, state) ^ key[0];
-        L[1] = whirlpool_mds(1, state) ^ key[1];
-        L[2] = whirlpool_mds(2, state) ^ key[2];
-        L[3] = whirlpool_mds(3, state) ^ key[3];
-        L[4] = whirlpool_mds(4, state) ^ key[4];
-        L[5] = whirlpool_mds(5, state) ^ key[5];
-        L[6] = whirlpool_mds(6, state) ^ key[6];
-        L[7] = whirlpool_mds(7, state) ^ key[7];
+        for (i32 i = 0; i < 8; ++i) {
+            tmp[i] = whirlpool_mds(i, state) ^ key[i];
+        }
 
         for (i32 i = 0; i < 8; ++i)
-            state[i] = L[i];
+            state[i] = tmp[i];
     }
 
     // Apply Miyaguchi–Preneel compression function
@@ -636,7 +628,7 @@ void whirlpool_update(t_whirlpool_ctx* ctx, const u8* data, usize len)
 {
     u64 value = len * 8; // Length in bits
     u32 carry = 0;
-    for (i32 i = 31; i >= 0 && (carry != 0 || value != 0ULL); i--) {
+    for (i32 i = 31; i >= 0 && (carry != 0 || value != 0); --i) {
         carry += ctx->msg_len[i] + ((u32)value & 0xff);
         ctx->msg_len[i] = (u8)carry;
         carry >>= 8;
