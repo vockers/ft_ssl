@@ -69,6 +69,36 @@ Test(md5, test_md5)
              "35899082e51edf667f14477ac000cbba");
 }
 
+Test(md5, test_md5_cmd_stdin, .init = redirect_std)
+{
+    FILE* f_stdin = cr_get_redirected_stdin();
+    fprintf(f_stdin, "Hello, World!");
+    fclose(f_stdin);
+
+    RUN_HASH_CMD("md5");
+    cr_assert_stdout_eq_str(" (stdin)= 65a8e27d8879283831b664bd8b7f0ad4\n");
+}
+
+Test(md5, test_md5_cmd_stdin_p, .init = redirect_std)
+{
+    FILE* f_stdin = cr_get_redirected_stdin();
+    fprintf(f_stdin, "Hello, World!");
+    fclose(f_stdin);
+
+    RUN_HASH_CMD("md5", "-p");
+    cr_assert_stdout_eq_str(" (\"Hello, World!\")= 65a8e27d8879283831b664bd8b7f0ad4\n");
+}
+
+Test(md5, test_md5_cmd_stdin_q, .init = redirect_std)
+{
+    FILE* f_stdin = cr_get_redirected_stdin();
+    fprintf(f_stdin, "Hello, World!");
+    fclose(f_stdin);
+
+    RUN_HASH_CMD("md5", "-q");
+    cr_assert_stdout_eq_str("65a8e27d8879283831b664bd8b7f0ad4\n");
+}
+
 Test(md5, test_md5_cmd_s, .init = redirect_std)
 {
     RUN_HASH_CMD("md5", "-s", "Hello, World!");
@@ -146,6 +176,38 @@ Test(sha256, test_sha256)
                 "ef537f25c895bfa782526529a9b63d97aa631564d5d789c2b765448c8635fb6c");
     TEST_SHA256("Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
                 "a58dd8680234c1f8cc2ef2b325a43733605a7f16f288e072de8eae81fd8d6433");
+}
+
+Test(sha256, test_sha256_cmd_stdin, .init = redirect_std)
+{
+    FILE* f_stdin = cr_get_redirected_stdin();
+    fprintf(f_stdin, "Hello, World!");
+    fclose(f_stdin);
+
+    RUN_HASH_CMD("sha256");
+    cr_assert_stdout_eq_str(
+        " (stdin)= dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f\n");
+}
+
+Test(sha256, test_sha256_cmd_stdin_p, .init = redirect_std)
+{
+    FILE* f_stdin = cr_get_redirected_stdin();
+    fprintf(f_stdin, "Hello, World!");
+    fclose(f_stdin);
+
+    RUN_HASH_CMD("sha256", "-p");
+    cr_assert_stdout_eq_str(
+        " (\"Hello, World!\")= dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f\n");
+}
+
+Test(sha256, test_sha256_cmd_stdin_q, .init = redirect_std)
+{
+    FILE* f_stdin = cr_get_redirected_stdin();
+    fprintf(f_stdin, "Hello, World!");
+    fclose(f_stdin);
+
+    RUN_HASH_CMD("sha256", "-q");
+    cr_assert_stdout_eq_str("dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f\n");
 }
 
 Test(sha256, test_sha256_cmd_s, .init = redirect_std)
@@ -232,6 +294,43 @@ Test(whirlpool, test_whirlpool)
     TEST_WHIRLPOOL("Hello, World!",
                    "3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec44076ce7a8f7b"
                    "fa497e4d9dcb7c29337173f78d06791f3c3d9e00cc6017f0b");
+}
+
+Test(whirlpool, test_whirlpool_cmd_stdin, .init = redirect_std)
+{
+    FILE* f_stdin = cr_get_redirected_stdin();
+    fprintf(f_stdin, "Hello, World!");
+    fclose(f_stdin);
+
+    RUN_HASH_CMD("whirlpool");
+    cr_assert_stdout_eq_str(
+        " (stdin)= 3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec44076ce7a8f7b"
+        "fa497e4d9dcb7c29337173f78d06791f3c3d9e00cc6017f0b\n");
+}
+
+Test(whirlpool, test_whirlpool_cmd_stdin_p, .init = redirect_std)
+{
+    FILE* f_stdin = cr_get_redirected_stdin();
+    fprintf(f_stdin, "Hello, World!");
+    fclose(f_stdin);
+
+    RUN_HASH_CMD("whirlpool", "-p");
+    cr_assert_stdout_eq_str(
+        " (\"Hello, World!\")= "
+        "3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec44076ce7a8f7b"
+        "fa497e4d9dcb7c29337173f78d06791f3c3d9e00cc6017f0b\n");
+}
+
+Test(whirlpool, test_whirlpool_cmd_stdin_q, .init = redirect_std)
+{
+    FILE* f_stdin = cr_get_redirected_stdin();
+    fprintf(f_stdin, "Hello, World!");
+    fclose(f_stdin);
+
+    RUN_HASH_CMD("whirlpool", "-q");
+    cr_assert_stdout_eq_str(
+        "3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec44076ce7a8f7b"
+        "fa497e4d9dcb7c29337173f78d06791f3c3d9e00cc6017f0b\n");
 }
 
 Test(whirlpool, test_whirlpool_cmd_s, .init = redirect_std)
