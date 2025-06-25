@@ -115,7 +115,7 @@ i32 cmd_hash(i32 argc, char* argv[])
 
             int fd;
             if ((fd = open(file_path, O_RDONLY)) < 0) {
-                error(0, errno, "md5: %s", file_path);
+                error(0, errno, "%s: %s", argv[0], file_path);
                 continue;
             }
 
