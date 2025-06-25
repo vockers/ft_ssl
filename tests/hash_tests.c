@@ -3,7 +3,7 @@
 #include <signal.h>
 #include <stdarg.h>
 
-#include "ft_ssl.h"
+#include "../include/ft_ssl.h"
 
 #include "libft.h"
 
@@ -25,7 +25,7 @@ void test_hash_str(const char* str,
         digest_str, expected, "Hash '%s' does not match expected '%s'\n", digest_str, expected);
 }
 
-void run_hash_cmd(const char* cmd, ...)
+int run_hash_cmd(const char* cmd, ...)
 {
     va_list args;
 
@@ -43,7 +43,7 @@ void run_hash_cmd(const char* cmd, ...)
 
     va_end(args);
 
-    cr_assert_eq(cmd_hash(argc, argv), 0);
+    return cmd_hash(argc, argv);
 }
 
 #define TEST_MD5(str, expected)    test_hash_str(str, expected, MD5_DIGEST_SIZE, md5_str)
@@ -93,17 +93,47 @@ Test(md5, test_md5_cmd_file, .init = redirect_std)
                             "65a8e27d8879283831b664bd8b7f0ad4\n");
 }
 
-// Test(md5, test_md5_cmd_file_s, .init = redirect_std)
-// {
-//     RUN_HASH_CMD("md5", "-s", "Hello, World!", "tests/files/file1.txt");
-//     RUN_HASH_CMD("md5", "-q", "-s", "Hello, World!", "tests/files/file1.txt");
-//     RUN_HASH_CMD("md5", "-r", "-s", "Hello, World!", "tests/files/file1.txt");
-//     RUN_HASH_CMD("md5", "-q", "-r", "-s", "Hello, World!", "tests/files/file1.txt");
-//     cr_assert_stdout_eq_str("MD5 (\"Hello, World!\") = 65a8e27d8879283831b664bd8b7f0ad4\n"
-//                             "65a8e27d8879283831b664bd8b7f0ad4\n"
-//                             "65a8e27d8879283831b664bd8b7f0ad4 \"Hello, World!\"\n"
-//                             "65a8e27d8879283831b664bd8b7f0ad4 tests/files/file1.txt\n");
-// }
+Test(md5, test_md5_cmd_file_s, .init = redirect_std)
+{
+    RUN_HASH_CMD("md5", "-s", "Hello, World!", "tests/files/file2.txt");
+    RUN_HASH_CMD("md5", "-q", "-s", "Hello, World!", "tests/files/file2.txt");
+    RUN_HASH_CMD("md5", "-r", "-s", "Hello, World!", "tests/files/file2.txt");
+    RUN_HASH_CMD("md5", "-q", "-r", "-s", "Hello, World!", "tests/files/file2.txt");
+    cr_assert_stdout_eq_str("MD5 (\"Hello, World!\") = 65a8e27d8879283831b664bd8b7f0ad4\n"
+                            "MD5 (tests/files/file2.txt) = d41d8cd98f00b204e9800998ecf8427e\n"
+                            "65a8e27d8879283831b664bd8b7f0ad4\n"
+                            "d41d8cd98f00b204e9800998ecf8427e\n"
+                            "65a8e27d8879283831b664bd8b7f0ad4 \"Hello, World!\"\n"
+                            "d41d8cd98f00b204e9800998ecf8427e tests/files/file2.txt\n"
+                            "65a8e27d8879283831b664bd8b7f0ad4\n"
+                            "d41d8cd98f00b204e9800998ecf8427e\n");
+}
+
+Test(md5, test_md5_cmd_files, .init = redirect_std)
+{
+    RUN_HASH_CMD("md5",
+                 "-q",
+                 "tests/files/file1.txt",
+                 "tests/files/file2.txt",
+                 "tests/files/file3.txt",
+                 "tests/files/file4.txt");
+    cr_assert_stdout_eq_str("65a8e27d8879283831b664bd8b7f0ad4\n"
+                            "d41d8cd98f00b204e9800998ecf8427e\n"
+                            "c6a7779b5a7b3ae0bb0bdd672c98622c\n"
+                            "ba413841fb575b59013d38230c171473\n");
+}
+
+Test(md5, test_md5_cmd_errors, .init = redirect_std)
+{
+    RUN_HASH_CMD("md5", "-s");
+    RUN_HASH_CMD("md5", "-l");
+    RUN_HASH_CMD("md5", "tests/files/unexisting_file", "tests/files/unexisting_file2");
+    cr_assert_stderr_eq_str(
+        "boxfort-worker: option requires an argument -- 's'\n"
+        "boxfort-worker: invalid option -- 'l'\n"
+        "boxfort-worker: md5: tests/files/unexisting_file: No such file or directory\n"
+        "boxfort-worker: md5: tests/files/unexisting_file2: No such file or directory\n");
+}
 
 Test(sha256, test_sha256)
 {

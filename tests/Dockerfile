@@ -13,7 +13,7 @@ WORKDIR /app
 COPY ../. .
 
 # Compile the source code
-RUN clang -g -I./libft -I./include -o test \
+RUN clang -g -I./libft -I./include -o ft_ssl \
     src/cli/cli.c \
     src/cli/cmd_hash.c \
     src/hash/hash.c \
@@ -26,4 +26,4 @@ RUN clang -g -I./libft -I./include -o test \
     -lcriterion -L./libft/build -lft
 
 # Run the tests
-CMD ["./test"]
+CMD ["./ft_ssl"]
