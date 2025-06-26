@@ -76,7 +76,7 @@ Test(md5, test_md5_cmd_stdin, .init = redirect_std)
     fclose(f_stdin);
 
     RUN_HASH_CMD("md5");
-    cr_assert_stdout_eq_str(" (stdin)= 65a8e27d8879283831b664bd8b7f0ad4\n");
+    cr_assert_stdout_eq_str("(stdin)= 65a8e27d8879283831b664bd8b7f0ad4\n");
 }
 
 Test(md5, test_md5_cmd_stdin_p, .init = redirect_std)
@@ -86,7 +86,7 @@ Test(md5, test_md5_cmd_stdin_p, .init = redirect_std)
     fclose(f_stdin);
 
     RUN_HASH_CMD("md5", "-p");
-    cr_assert_stdout_eq_str(" (\"Hello, World!\")= 65a8e27d8879283831b664bd8b7f0ad4\n");
+    cr_assert_stdout_eq_str("(\"Hello, World!\")= 65a8e27d8879283831b664bd8b7f0ad4\n");
 }
 
 Test(md5, test_md5_cmd_stdin_q, .init = redirect_std)
@@ -97,6 +97,16 @@ Test(md5, test_md5_cmd_stdin_q, .init = redirect_std)
 
     RUN_HASH_CMD("md5", "-q");
     cr_assert_stdout_eq_str("65a8e27d8879283831b664bd8b7f0ad4\n");
+}
+
+Test(md5, test_md5_cmd_stdin_pq, .init = redirect_std)
+{
+    FILE* f_stdin = cr_get_redirected_stdin();
+    fprintf(f_stdin, "Hello, World!");
+    fclose(f_stdin);
+
+    RUN_HASH_CMD("md5", "-p", "-q");
+    cr_assert_stdout_eq_str("Hello, World!\n65a8e27d8879283831b664bd8b7f0ad4\n");
 }
 
 Test(md5, test_md5_cmd_s, .init = redirect_std)
@@ -165,6 +175,32 @@ Test(md5, test_md5_cmd_errors, .init = redirect_std)
         "boxfort-worker: md5: tests/files/unexisting_file2: No such file or directory\n");
 }
 
+Test(md5, test_md5_cmd_42, .init = redirect_std)
+{
+    FILE* f_stdin = cr_get_redirected_stdin();
+    fprintf(f_stdin, "one more thing\n");
+    fclose(f_stdin);
+
+    RUN_HASH_CMD("md5", "-r", "-p", "-s", "foo", "tests/files/file1.txt", "-s", "bar");
+    cr_assert_stdout_eq_str("(\"one more thing\")= a0bd1876c6f011dd50fae52827f445f5\n"
+                            "acbd18db4cc2f85cedef654fccc4a4d8 \"foo\"\n"
+                            "65a8e27d8879283831b664bd8b7f0ad4 tests/files/file1.txt\n");
+    cr_assert_stderr_eq_str("boxfort-worker: md5: -s: No such file or directory\n"
+                            "boxfort-worker: md5: bar: No such file or directory\n");
+}
+
+Test(md5, test_md5_cmd_42_2, .init = redirect_std)
+{
+    FILE* f_stdin = cr_get_redirected_stdin();
+    fprintf(f_stdin, "just to be extra clear\n");
+    fclose(f_stdin);
+
+    RUN_HASH_CMD("md5", "-r", "-q", "-p", "-s", "foo", "tests/files/file1.txt");
+    cr_assert_stdout_eq_str("just to be extra clear\n3ba35f1ea0d170cb3b9a752e3360286c\n"
+                            "acbd18db4cc2f85cedef654fccc4a4d8\n"
+                            "65a8e27d8879283831b664bd8b7f0ad4\n");
+}
+
 Test(sha256, test_sha256)
 {
     TEST_SHA256("", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
@@ -186,7 +222,7 @@ Test(sha256, test_sha256_cmd_stdin, .init = redirect_std)
 
     RUN_HASH_CMD("sha256");
     cr_assert_stdout_eq_str(
-        " (stdin)= dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f\n");
+        "(stdin)= dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f\n");
 }
 
 Test(sha256, test_sha256_cmd_stdin_p, .init = redirect_std)
@@ -196,8 +232,8 @@ Test(sha256, test_sha256_cmd_stdin_p, .init = redirect_std)
     fclose(f_stdin);
 
     RUN_HASH_CMD("sha256", "-p");
-    cr_assert_stdout_eq_str(
-        " (\"Hello, World!\")= dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f\n");
+    cr_assert_stdout_eq_str("(\"Hello, World!\")= "
+                            "dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f\n");
 }
 
 Test(sha256, test_sha256_cmd_stdin_q, .init = redirect_std)
@@ -230,12 +266,12 @@ Test(sha256, test_sha256_cmd_file, .init = redirect_std)
     RUN_HASH_CMD("sha256", "-q", "tests/files/file1.txt");
     RUN_HASH_CMD("sha256", "-r", "tests/files/file1.txt");
     RUN_HASH_CMD("sha256", "-q", "-r", "tests/files/file1.txt");
-    cr_assert_stdout_eq_str(
-        "SHA256 (tests/files/file1.txt) = "
-        "dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f\n"
-        "dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f\n"
-        "dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f tests/files/file1.txt\n"
-        "dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f\n");
+    cr_assert_stdout_eq_str("SHA256 (tests/files/file1.txt) = "
+                            "dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f\n"
+                            "dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f\n"
+                            "dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f "
+                            "tests/files/file1.txt\n"
+                            "dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f\n");
 }
 
 Test(sha256, test_sha256_cmd_file_s, .init = redirect_std)
@@ -252,7 +288,8 @@ Test(sha256, test_sha256_cmd_file_s, .init = redirect_std)
         "dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f\n"
         "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\n"
         "dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f \"Hello, World!\"\n"
-        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 tests/files/file2.txt\n"
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 "
+        "tests/files/file2.txt\n"
         "dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f\n"
         "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\n");
 }
@@ -304,7 +341,8 @@ Test(whirlpool, test_whirlpool_cmd_stdin, .init = redirect_std)
 
     RUN_HASH_CMD("whirlpool");
     cr_assert_stdout_eq_str(
-        " (stdin)= 3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec44076ce7a8f7b"
+        "(stdin)= "
+        "3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec44076ce7a8f7b"
         "fa497e4d9dcb7c29337173f78d06791f3c3d9e00cc6017f0b\n");
 }
 
@@ -316,7 +354,7 @@ Test(whirlpool, test_whirlpool_cmd_stdin_p, .init = redirect_std)
 
     RUN_HASH_CMD("whirlpool", "-p");
     cr_assert_stdout_eq_str(
-        " (\"Hello, World!\")= "
+        "(\"Hello, World!\")= "
         "3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec44076ce7a8f7b"
         "fa497e4d9dcb7c29337173f78d06791f3c3d9e00cc6017f0b\n");
 }
@@ -357,16 +395,19 @@ Test(whirlpool, test_whirlpool_cmd_file, .init = redirect_std)
     RUN_HASH_CMD("whirlpool", "-q", "tests/files/file1.txt");
     RUN_HASH_CMD("whirlpool", "-r", "tests/files/file1.txt");
     RUN_HASH_CMD("whirlpool", "-q", "-r", "tests/files/file1.txt");
-    cr_assert_stdout_eq_str(
-        "WHIRLPOOL (tests/files/file1.txt) = "
-        "3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec44076ce7a8f7bfa497e4d9dc"
-        "b7c29337173f78d06791f3c3d9e00cc6017f0b\n"
-        "3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec44076ce7a8f7bfa497e4d9dc"
-        "b7c29337173f78d06791f3c3d9e00cc6017f0b\n"
-        "3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec44076ce7a8f7bfa497e4d9dc"
-        "b7c29337173f78d06791f3c3d9e00cc6017f0b tests/files/file1.txt\n"
-        "3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec44076ce7a8f7bfa497e4d9dc"
-        "b7c29337173f78d06791f3c3d9e00cc6017f0b\n");
+    cr_assert_stdout_eq_str("WHIRLPOOL (tests/files/file1.txt) = "
+                            "3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec"
+                            "44076ce7a8f7bfa497e4d9dc"
+                            "b7c29337173f78d06791f3c3d9e00cc6017f0b\n"
+                            "3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec"
+                            "44076ce7a8f7bfa497e4d9dc"
+                            "b7c29337173f78d06791f3c3d9e00cc6017f0b\n"
+                            "3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec"
+                            "44076ce7a8f7bfa497e4d9dc"
+                            "b7c29337173f78d06791f3c3d9e00cc6017f0b tests/files/file1.txt\n"
+                            "3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec"
+                            "44076ce7a8f7bfa497e4d9dc"
+                            "b7c29337173f78d06791f3c3d9e00cc6017f0b\n");
 }
 
 Test(whirlpool, test_whirlpool_cmd_file_s, .init = redirect_std)
@@ -375,25 +416,32 @@ Test(whirlpool, test_whirlpool_cmd_file_s, .init = redirect_std)
     RUN_HASH_CMD("whirlpool", "-q", "-s", "Hello, World!", "tests/files/file2.txt");
     RUN_HASH_CMD("whirlpool", "-r", "-s", "Hello, World!", "tests/files/file2.txt");
     RUN_HASH_CMD("whirlpool", "-q", "-r", "-s", "Hello, World!", "tests/files/file2.txt");
-    cr_assert_stdout_eq_str(
-        "WHIRLPOOL (\"Hello, World!\") = "
-        "3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec44076ce7a8f7bfa497e4d9dc"
-        "b7c29337173f78d06791f3c3d9e00cc6017f0b\n"
-        "WHIRLPOOL (tests/files/file2.txt) = "
-        "19fa61d75522a4669b44e39c1d2e1726c530232130d407f89afee0964997f7a73e83be698b288febcf88e3e03c"
-        "4f0757ea8964e59b63d93708b138cc42a66eb3\n"
-        "3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec44076ce7a8f7bfa497e4d9dc"
-        "b7c29337173f78d06791f3c3d9e00cc6017f0b\n"
-        "19fa61d75522a4669b44e39c1d2e1726c530232130d407f89afee0964997f7a73e83be698b288febcf88e3e03"
-        "c4f0757ea8964e59b63d93708b138cc42a66eb3\n"
-        "3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec44076ce7a8f7bfa497e4d9dc"
-        "b7c29337173f78d06791f3c3d9e00cc6017f0b \"Hello, World!\"\n"
-        "19fa61d75522a4669b44e39c1d2e1726c530232130d407f89afee0964997f7a73e83be698b288febcf88e3e03"
-        "c4f0757ea8964e59b63d93708b138cc42a66eb3 tests/files/file2.txt\n"
-        "3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec44076ce7a8f7bfa497e4d9dc"
-        "b7c29337173f78d06791f3c3d9e00cc6017f0b\n"
-        "19fa61d75522a4669b44e39c1d2e1726c530232130d407f89afee0964997f7a73e83be698b288febcf88e3e03"
-        "c4f0757ea8964e59b63d93708b138cc42a66eb3\n");
+    cr_assert_stdout_eq_str("WHIRLPOOL (\"Hello, World!\") = "
+                            "3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec"
+                            "44076ce7a8f7bfa497e4d9dc"
+                            "b7c29337173f78d06791f3c3d9e00cc6017f0b\n"
+                            "WHIRLPOOL (tests/files/file2.txt) = "
+                            "19fa61d75522a4669b44e39c1d2e1726c530232130d407f89afee0964997f7a73e"
+                            "83be698b288febcf88e3e03c"
+                            "4f0757ea8964e59b63d93708b138cc42a66eb3\n"
+                            "3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec"
+                            "44076ce7a8f7bfa497e4d9dc"
+                            "b7c29337173f78d06791f3c3d9e00cc6017f0b\n"
+                            "19fa61d75522a4669b44e39c1d2e1726c530232130d407f89afee0964997f7a73e"
+                            "83be698b288febcf88e3e03"
+                            "c4f0757ea8964e59b63d93708b138cc42a66eb3\n"
+                            "3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec"
+                            "44076ce7a8f7bfa497e4d9dc"
+                            "b7c29337173f78d06791f3c3d9e00cc6017f0b \"Hello, World!\"\n"
+                            "19fa61d75522a4669b44e39c1d2e1726c530232130d407f89afee0964997f7a73e"
+                            "83be698b288febcf88e3e03"
+                            "c4f0757ea8964e59b63d93708b138cc42a66eb3 tests/files/file2.txt\n"
+                            "3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec"
+                            "44076ce7a8f7bfa497e4d9dc"
+                            "b7c29337173f78d06791f3c3d9e00cc6017f0b\n"
+                            "19fa61d75522a4669b44e39c1d2e1726c530232130d407f89afee0964997f7a73e"
+                            "83be698b288febcf88e3e03"
+                            "c4f0757ea8964e59b63d93708b138cc42a66eb3\n");
 }
 
 Test(whirlpool, test_whirlpool_cmd_files, .init = redirect_std)
@@ -404,15 +452,18 @@ Test(whirlpool, test_whirlpool_cmd_files, .init = redirect_std)
                  "tests/files/file2.txt",
                  "tests/files/file3.txt",
                  "tests/files/file4.txt");
-    cr_assert_stdout_eq_str(
-        "3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec44076ce7a8f7bfa497e4d9dc"
-        "b7c29337173f78d06791f3c3d9e00cc6017f0b\n"
-        "19fa61d75522a4669b44e39c1d2e1726c530232130d407f89afee0964997f7a73e83be698b288febcf88e3e03"
-        "c4f0757ea8964e59b63d93708b138cc42a66eb3\n"
-        "440dd53177c25caa099396a86fcde996866ceb4764771f1edca5e2980e008da3bcf33d3edc85e5ebf5b3eae733"
-        "5ac0d90599bdbeb71264fab8a7d26ee8517bf4\n"
-        "1c2d95a7503ecaa9f523655117b40ebb90ef60c07a53191cc7248b251a7033f74af22df64e57fefaf6a8ed8a65"
-        "4d13e70b90754150797ced0057fc5b326c07b1\n");
+    cr_assert_stdout_eq_str("3d837c9ef7bb291bd1dcfc05d3004af2eeb8c631dd6a6c4ba35159b8889de4b1ec"
+                            "44076ce7a8f7bfa497e4d9dc"
+                            "b7c29337173f78d06791f3c3d9e00cc6017f0b\n"
+                            "19fa61d75522a4669b44e39c1d2e1726c530232130d407f89afee0964997f7a73e"
+                            "83be698b288febcf88e3e03"
+                            "c4f0757ea8964e59b63d93708b138cc42a66eb3\n"
+                            "440dd53177c25caa099396a86fcde996866ceb4764771f1edca5e2980e008da3bc"
+                            "f33d3edc85e5ebf5b3eae733"
+                            "5ac0d90599bdbeb71264fab8a7d26ee8517bf4\n"
+                            "1c2d95a7503ecaa9f523655117b40ebb90ef60c07a53191cc7248b251a7033f74a"
+                            "f22df64e57fefaf6a8ed8a65"
+                            "4d13e70b90754150797ced0057fc5b326c07b1\n");
 }
 
 Test(whirlpool, test_whirlpool_cmd_errors, .init = redirect_std)

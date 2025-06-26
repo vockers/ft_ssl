@@ -36,6 +36,28 @@ static void print_digest(
     ft_printf("\n");
 }
 
+static void print_stdin_digest(const u8* digest, usize size, char* input, t_hash_opt* opt)
+{
+    if (!opt->q) {
+        if (opt->p) {
+            usize input_len = ft_strlen(input);
+            if (input[input_len - 1] == '\n') {
+                input[input_len - 1] = '\0'; // Remove trailing newline for output
+            }
+            ft_printf("(\"%s\")= ", input);
+        } else
+            ft_printf("(stdin)= ");
+    } else if (opt->p) {
+        if (input[ft_strlen(input) - 1] == '\n')
+            ft_printf("%s", input);
+        else
+            ft_printf("%s\n", input);
+    }
+
+    print_bytes(digest, size);
+    ft_printf("\n");
+}
+
 i32 cmd_hash(i32 argc, char* argv[])
 {
     const t_hash_algo* algo = find_hash_algo(argv[0]);
@@ -81,7 +103,7 @@ i32 cmd_hash(i32 argc, char* argv[])
 
         ssize_t bytes_read;
         while ((bytes_read = read(STDIN_FILENO, buffer, BUFFER_SIZE)) > 0) {
-            if (!opt.q && opt.p) {
+            if (opt.p) {
                 char* tmp = input;
                 input     = ft_strnjoin(input, (const char*)buffer, ft_strlen(input), bytes_read);
                 free(tmp);
@@ -91,17 +113,9 @@ i32 cmd_hash(i32 argc, char* argv[])
 
         algo->final(ctx, digest);
 
-        if (!opt.q) {
-            if (opt.p)
-                ft_printf(" (\"%s\")= ", input);
-            else
-                ft_printf(" (stdin)= ");
-        }
+        print_stdin_digest(digest, algo->digest_size, input, &opt);
 
         free(input);
-
-        print_bytes(digest, algo->digest_size);
-        ft_printf("\n");
     }
 
     if (opt.s) {
