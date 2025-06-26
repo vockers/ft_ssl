@@ -16,7 +16,7 @@ typedef int64_t i64;
 typedef size_t  usize;
 typedef ssize_t isize;
 
-#define BUFFER_SIZE 1024 // Size of the buffer for reading files
+#define BUFFER_SIZE 16384 // Size of the buffer for reading files
 
 #define LEFT_ROTATE(n, d)  ((n << d) | (n >> (32 - d)))
 #define RIGHT_ROTATE(n, d) ((n >> d) | (n << (32 - d)))
