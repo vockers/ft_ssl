@@ -1,5 +1,6 @@
 #pragma once
 
+#include "base64.h"
 #include "cli.h"
 #include "hash.h"
 #include "utils.h"
@@ -50,15 +51,6 @@ u64 mod_inverse(u64 a, u64 b);
  * @return usize The length of the DER encoded key.
  */
 usize der_encode_rsa_privkey(u8* output, t_rsa_privkey* key);
-
-/**
- * @brief Encode a byte array to base64.
- *
- * @param data The data to encode.
- * @param input_length The length of the data.
- * @return char* The base64 encoded data.
- */
-char* base64_encode(const u8* data, usize input_length);
 
 /**
  * @brief Generate a random number with a specified number of bits.

@@ -1,14 +1,20 @@
+#include "ft_ssl.h"
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "ft_ssl.h"
+#include "libft.h"
 
 static const char* base64_table =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 char* base64_encode(const u8* data, usize input_length)
 {
+    if (input_length == 0) {
+        return ft_calloc(1, sizeof(char)); // Return empty string if input length is 0
+    }
+
     usize output_length = ((input_length - 1) / 3) * 4 + 4;
     char* output        = malloc(sizeof(char) * (output_length + 1));
     if (output == NULL) {
