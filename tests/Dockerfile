@@ -15,6 +15,7 @@ COPY ../. .
 # Compile the source code
 RUN clang -g -I./libft -I./include -o ft_ssl \
     src/cli/cli.c \
+    src/cli/cmd_base64.c \
     src/cli/cmd_hash.c \
     src/hash/hash.c \
     src/hash/md5.c \

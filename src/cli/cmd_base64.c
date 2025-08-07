@@ -37,15 +37,28 @@ i32 cmd_base64(i32 argc, char* argv[])
             free(tmp);
         }
 
-        char* encoded = base64_encode((const u8*)input, ft_strlen(input));
-        free(input);
-        if (!encoded) {
-            error(0, errno, "base64 encoding failed");
-            return -1;
-        }
+        if (opt.decode) {
+            size_t output_length;
+            u8*    decoded = base64_decode(input, &output_length);
+            free(input);
+            if (!decoded) {
+                error(0, errno, "base64: invalid input");
+                return -1;
+            }
 
-        ft_printf("%s\n", encoded);
-        free(encoded);
+            write(STDOUT_FILENO, decoded, output_length);
+            free(decoded);
+        } else {
+            char* encoded = base64_encode((const u8*)input, ft_strlen(input));
+            free(input);
+            if (!encoded) {
+                error(0, errno, "base64 encoding failed");
+                return -1;
+            }
+
+            ft_printf("%s\n", encoded);
+            free(encoded);
+        }
     }
 
     return 0;
