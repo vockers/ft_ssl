@@ -11,7 +11,7 @@
 
 static i32 base64_file(i32 fd_in, i32 fd_out, bool decode)
 {
-    u8      buffer[FILE_BUFFER_SIZE];
+    u8      buffer[FILE_BUFFER_SIZE + 1];
     ssize_t bytes_read;
 
     while ((bytes_read = read(fd_in, buffer, FILE_BUFFER_SIZE)) > 0) {
@@ -21,13 +21,14 @@ static i32 base64_file(i32 fd_in, i32 fd_out, bool decode)
         }
 
         if (decode) {
+            buffer[bytes_read] = '\0';
             for (isize i = 0; i < bytes_read; i += 64) {
                 usize decoded_length;
                 u8*   decoded = base64_decode((char*)buffer + i, 64, &decoded_length);
                 if (!decoded)
                     return -1;
 
-                write(STDOUT_FILENO, decoded, decoded_length);
+                write(fd_out, decoded, decoded_length);
                 free(decoded);
             }
         } else {
@@ -63,9 +64,33 @@ i32 cmd_base64(i32 argc, char* argv[])
     }
 
     // Read from stdin if no input file is specified
-    if (!opt.input_file) {
-        base64_file(STDIN_FILENO, STDOUT_FILENO, opt.decode);
+    i32 input_fd = STDIN_FILENO;
+    if (opt.input_file) {
+        input_fd = open(opt.input_file, O_RDONLY);
+        if (input_fd < 0) {
+            error(0, errno, "failed to open input file '%s'", opt.input_file);
+            return -1;
+        }
+    }
+    // Write to stdout if no output file is specified
+    i32 output_fd = STDOUT_FILENO;
+    if (opt.output_file) {
+        output_fd = open(opt.output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (output_fd < 0) {
+            error(0, errno, "failed to open output file '%s'", opt.output_file);
+            if (input_fd != STDIN_FILENO)
+                close(input_fd);
+
+            return -1;
+        }
     }
 
-    return 0;
+    i32 status = base64_file(input_fd, output_fd, opt.decode);
+
+    if (input_fd != STDIN_FILENO)
+        close(input_fd);
+    if (output_fd != STDOUT_FILENO)
+        close(output_fd);
+
+    return status;
 }
