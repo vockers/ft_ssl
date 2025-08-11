@@ -1,7 +1,8 @@
-#include <readline/history.h>
-#include <readline/readline.h>
 #include <stdio.h>
 #include <unistd.h>
+
+#include <readline/history.h>
+#include <readline/readline.h>
 
 #include "ft_ssl.h"
 #include "libft.h"
