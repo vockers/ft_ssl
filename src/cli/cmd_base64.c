@@ -7,6 +7,44 @@
 
 #include "libft.h"
 
+#define FILE_BUFFER_SIZE 14400 // Multiple of 3 and 4 for base64 encoding
+
+static i32 base64_file(i32 fd_in, i32 fd_out, bool decode)
+{
+    u8      buffer[FILE_BUFFER_SIZE];
+    ssize_t bytes_read;
+
+    while ((bytes_read = read(fd_in, buffer, FILE_BUFFER_SIZE)) > 0) {
+        if (bytes_read < 0) {
+            error(0, errno, "failed to read from input file");
+            return -1;
+        }
+
+        if (decode) {
+            for (isize i = 0; i < bytes_read; i += 64) {
+                usize decoded_length;
+                u8*   decoded = base64_decode((char*)buffer + i, 64, &decoded_length);
+                if (!decoded)
+                    return -1;
+
+                write(STDOUT_FILENO, decoded, decoded_length);
+                free(decoded);
+            }
+        } else {
+            for (isize i = 0; i < bytes_read; i += 48) {
+                char* encoded = base64_encode(buffer + i, MIN(bytes_read - i, 48));
+                if (!encoded)
+                    return -1;
+
+                ft_dprintf(fd_out, "%s\n", encoded);
+                free(encoded);
+            }
+        }
+    }
+
+    return 0;
+}
+
 i32 cmd_base64(i32 argc, char* argv[])
 {
     t_base64_opt opt;
@@ -26,39 +64,7 @@ i32 cmd_base64(i32 argc, char* argv[])
 
     // Read from stdin if no input file is specified
     if (!opt.input_file) {
-        u8 buffer[BUFFER_SIZE];
-
-        char* input = ft_strdup("");
-
-        ssize_t bytes_read;
-        while ((bytes_read = read(STDIN_FILENO, buffer, BUFFER_SIZE)) > 0) {
-            char* tmp = input;
-            input     = ft_strnjoin(input, (const char*)buffer, ft_strlen(input), bytes_read);
-            free(tmp);
-        }
-
-        if (opt.decode) {
-            size_t output_length;
-            u8*    decoded = base64_decode(input, &output_length);
-            free(input);
-            if (!decoded) {
-                error(0, errno, "base64: invalid input");
-                return -1;
-            }
-
-            write(STDOUT_FILENO, decoded, output_length);
-            free(decoded);
-        } else {
-            char* encoded = base64_encode((const u8*)input, ft_strlen(input));
-            free(input);
-            if (!encoded) {
-                error(0, errno, "base64 encoding failed");
-                return -1;
-            }
-
-            ft_printf("%s\n", encoded);
-            free(encoded);
-        }
+        base64_file(STDIN_FILENO, STDOUT_FILENO, opt.decode);
     }
 
     return 0;

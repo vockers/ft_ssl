@@ -11,21 +11,21 @@ CFLAGS      = -I$(INCLUDE_DIR) -I$(LIBFT_DIR) -Wall -Wextra -Werror
 LDFLAGS		= -L$(LIBFT_DIR)/build -lft -lreadline
 DEBUG_FLAGS = -MMD -MP -g -fsanitize=address
 
-SRCS = asn1.c \
-	   base64.c \
-	   main.c \
+SRCS = main.c \
 	   math.c \
 	   prime.c \
 	   rand.c \
 	   rsa.c \
+	   cli/cli.c \
+	   cli/cmd_base64.c \
+	   cli/cmd_hash.c \
+	   encoding/asn1.c \
+	   encoding/base64.c \
 	   hash/hash.c \
 	   hash/hmac.c \
 	   hash/md5.c \
 	   hash/sha256.c \
-	   hash/whirlpool.c \
-	   cli/cli.c \
-	   cli/cmd_base64.c \
-	   cli/cmd_hash.c
+	   hash/whirlpool.c
 OBJS = $(patsubst %.c,$(OBJ_DIR)/%.o,$(SRCS))
 
 all: debug

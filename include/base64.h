@@ -22,7 +22,8 @@ char* base64_encode(const u8* data, usize input_length);
  * @brief Decode a base64 encoded string.
  *
  * @param input The base64 encoded string.
+ * @param n Decode a maxiumum of n bytes
  * @param output_length Pointer to store the length of the decoded data.
  * @return u8* The decoded data.
  */
-u8* base64_decode(const char* input, usize* output_length);
+u8* base64_decode(const char* input, usize n, usize* output_length);

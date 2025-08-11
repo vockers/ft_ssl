@@ -60,13 +60,13 @@ char* base64_encode(const u8* data, usize input_length)
     return output;
 }
 
-u8* base64_decode(const char* input, usize* output_length)
+u8* base64_decode(const char* input, usize n, usize* output_length)
 {
     if (input == NULL || *input == '\0') {
         return NULL;
     }
 
-    usize input_length = ft_strlen(input);
+    usize input_length = MIN(ft_strlen(input), n);
     if (input_length % 4 != 0) {
         return NULL; // Invalid base64 string length
     }

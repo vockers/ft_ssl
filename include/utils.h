@@ -20,3 +20,6 @@ typedef ssize_t isize;
 
 #define LEFT_ROTATE(n, d)  ((n << d) | (n >> (32 - d)))
 #define RIGHT_ROTATE(n, d) ((n >> d) | (n << (32 - d)))
+
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
