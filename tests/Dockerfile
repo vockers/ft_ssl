@@ -14,6 +14,7 @@ COPY ../. .
 
 # Compile the source code
 RUN clang -g -I./libft -I./include -o ft_ssl \
+    src/pbkdf2.c \
     src/cli/cli.c \
     src/cli/cmd_base64.c \
     src/cli/cmd_hash.c \
@@ -26,6 +27,7 @@ RUN clang -g -I./libft -I./include -o ft_ssl \
     tests/base64_tests.c \
     tests/hash_tests.c \
     tests/hmac_tests.c \
+    tests/pbkdf2_tests.c \
     -lcriterion -L./libft/build -lft
 
 # Run the tests

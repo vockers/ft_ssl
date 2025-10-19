@@ -16,6 +16,7 @@ SRCS = main.c \
 	   prime.c \
 	   rand.c \
 	   rsa.c \
+	   pbkdf2.c \
 	   cli/cli.c \
 	   cli/cmd_base64.c \
 	   cli/cmd_hash.c \

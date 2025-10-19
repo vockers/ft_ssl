@@ -69,12 +69,9 @@ int cmd_rsa();
 // SHA-256
 int cmd_sha256(const char* file_path);
 
-typedef void (*t_hmac_func)(const u8* key, usize key_len, const u8* msg, usize msg_len, u8* output);
-
 /**
  * @brief PBKDF2 key derivation function.
  *
- * @param hmac The HMAC function to use.
  * @param password The password.
  * @param password_len The length of the password.
  * @param salt The salt.
@@ -83,4 +80,9 @@ typedef void (*t_hmac_func)(const u8* key, usize key_len, const u8* msg, usize m
  * @param dk_len The desired length of the derived key.
  * @return u8* The derived key.
  */
-u8* pbkdf2(t_hmac_func hmac, const u8* password, usize password_len, const u8* salt, usize salt_len, u32 iterations, usize dk_len);
+ u8* pbkdf2(const u8* password,
+            usize     password_len,
+            const u8* salt,
+            usize     salt_len,
+            u32       iterations,
+            usize     dk_len);
