@@ -7,40 +7,68 @@
 
 #include "libft.h"
 
-#define FILE_BUFFER_SIZE 14400 // Multiple of 3 and 4 for base64 encoding
+#define FILE_BUFFER_SIZE  14400 // Multiple of 3 and 4
+#define ENCODE_CHUNK_SIZE 48
+#define DECODE_CHUNK_SIZE 64
 
-static i32 base64_file(i32 fd_in, i32 fd_out, bool decode)
+static inline isize strip_whitespace_inplace(char* str, isize len)
 {
-    u8      buffer[FILE_BUFFER_SIZE + 1];
-    ssize_t bytes_read;
+    isize new_len = 0;
+    for (isize i = 0; i < len; i++) {
+        char c = str[i];
+        if (!ft_isspace(c)) {
+            str[new_len++] = c;
+        }
+    }
+    return new_len;
+}
+
+static i32 base64_encode_file(i32 fd_in, i32 fd_out)
+{
+    u8    buffer[FILE_BUFFER_SIZE];
+    isize bytes_read;
 
     while ((bytes_read = read(fd_in, buffer, FILE_BUFFER_SIZE)) > 0) {
-        if (bytes_read < 0) {
-            error(0, errno, "failed to read from input file");
-            return -1;
+        for (isize i = 0; i < bytes_read; i += ENCODE_CHUNK_SIZE) {
+            char* encoded = base64_encode(buffer + i, MIN(bytes_read - i, ENCODE_CHUNK_SIZE));
+            if (!encoded)
+                return -1;
+
+            ft_dprintf(fd_out, "%s\n", encoded);
+            free(encoded);
+        }
+    }
+
+    return 0;
+}
+
+static i32 base64_decode_file(i32 fd_in, i32 fd_out)
+{
+    u8    buffer[FILE_BUFFER_SIZE + 4]; // Extra space for carry-over
+    isize bytes_read;
+    usize carry_len = 0;
+
+    while ((bytes_read = read(fd_in, buffer + carry_len, FILE_BUFFER_SIZE)) > 0) {
+        bytes_read += carry_len;
+        isize stripped_len = strip_whitespace_inplace((char*)buffer, bytes_read);
+
+        buffer[stripped_len] = '\0';
+        isize used = (stripped_len / 4) * 4; // Number of bytes that can be decoded (multiple of 4)
+        for (isize i = 0; i < used; i += DECODE_CHUNK_SIZE) {
+            usize block_size = MIN(used - i, DECODE_CHUNK_SIZE);
+            usize decoded_length;
+            u8*   decoded = base64_decode((char*)buffer + i, block_size, &decoded_length);
+            if (!decoded) {
+                return -1;
+            }
+
+            write(fd_out, decoded, decoded_length);
+            free(decoded);
         }
 
-        if (decode) {
-            buffer[bytes_read] = '\0';
-            for (isize i = 0; i < bytes_read; i += 64) {
-                usize decoded_length;
-                u8*   decoded = base64_decode((char*)buffer + i, 64, &decoded_length);
-                if (!decoded)
-                    return -1;
-
-                write(fd_out, decoded, decoded_length);
-                free(decoded);
-            }
-        } else {
-            for (isize i = 0; i < bytes_read; i += 48) {
-                char* encoded = base64_encode(buffer + i, MIN(bytes_read - i, 48));
-                if (!encoded)
-                    return -1;
-
-                ft_dprintf(fd_out, "%s\n", encoded);
-                free(encoded);
-            }
-        }
+        // Move undecoded bytes to the beginning of the buffer
+        carry_len = stripped_len - used;
+        ft_memmove(buffer, buffer + used, carry_len);
     }
 
     return 0;
@@ -85,7 +113,8 @@ i32 cmd_base64(i32 argc, char* argv[])
         }
     }
 
-    i32 status = base64_file(input_fd, output_fd, opt.decode);
+    i32 status = opt.decode ? base64_decode_file(input_fd, output_fd)
+                            : base64_encode_file(input_fd, output_fd);
 
     if (input_fd != STDIN_FILENO)
         close(input_fd);
