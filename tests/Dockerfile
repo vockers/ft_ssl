@@ -22,8 +22,10 @@ RUN clang -g -I./libft -I./include -o ft_ssl \
     src/hash/md5.c \
     src/hash/sha256.c \
     src/hash/whirlpool.c \
+    src/hash/hmac.c \
     tests/base64_tests.c \
     tests/hash_tests.c \
+    tests/hmac_tests.c \
     -lcriterion -L./libft/build -lft
 
 # Run the tests

@@ -92,3 +92,8 @@ void whirlpool_init(t_whirlpool_ctx* ctx);
 void whirlpool_update(t_whirlpool_ctx* ctx, const u8* data, usize len);
 void whirlpool_final(t_whirlpool_ctx* ctx, u8* digest);
 void whirlpool_str(const char* str, usize len, u8* digest);
+
+// HMAC
+void hmac_md5(const u8* key, usize key_len, const u8* data, usize data_len, u8* digest);
+void hmac_sha256(const u8* key, usize key_len, const u8* data, usize data_len, u8* digest);
+void hmac_whirlpool(const u8* key, usize key_len, const u8* data, usize data_len, u8* digest);

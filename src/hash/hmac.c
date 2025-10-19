@@ -5,22 +5,17 @@
 
 #include "libft.h"
 
-i32 hmac(const t_hash_algo* algo,
-         const u8*          key,
-         usize              key_len,
-         const u8*          data,
-         usize              data_len,
-         u8*                digest)
+static void hmac(const t_hash_algo* algo,
+                 u8*                buffers,
+                 const u8*          key,
+                 usize              key_len,
+                 const u8*          data,
+                 usize              data_len,
+                 u8*                digest)
 {
     usize ctx_size    = algo->ctx_size;
     usize block_size  = algo->block_size;
     usize digest_size = algo->digest_size;
-
-    u8* buffers = malloc(ctx_size + block_size * 2 + digest_size);
-    if (!buffers) {
-        error(0, errno, "HMAC buffers allocation failed");
-        return -1;
-    }
 
     void* ctx          = buffers;
     u8*   k_ipad       = buffers + ctx_size;
@@ -56,21 +51,16 @@ i32 hmac(const t_hash_algo* algo,
     algo->update(ctx, k_opad, block_size);
     algo->update(ctx, inner_digest, digest_size);
     algo->final(ctx, digest);
-
-    free(buffers);
-
-    return 0;
 }
 
-#define IMPLEMENT_HMAC(algo_name, algo_type)                                                       \
-    int hmac_##algo_name(const u8* key, usize key_len, const u8* data, usize data_len, u8* digest) \
-    {                                                                                              \
-        const t_hash_algo* algo = get_hash_algo(algo_type);                                        \
-        if (!algo) {                                                                               \
-            error(0, 0, #algo_name " algorithm not found");                                        \
-            return -1;                                                                             \
-        }                                                                                          \
-        return hmac(algo, key, key_len, data, data_len, digest);                                   \
+#define IMPLEMENT_HMAC(algo_name, algo_type)                                      \
+    void hmac_##algo_name(                                                        \
+        const u8* key, usize key_len, const u8* data, usize data_len, u8* digest) \
+    {                                                                             \
+        const t_hash_algo* algo = get_hash_algo(algo_type);                       \
+                                                                                  \
+        u8 buffers[algo->ctx_size + (algo->block_size * 2) + algo->digest_size];  \
+        hmac(algo, buffers, key, key_len, data, data_len, digest);                \
     }
 
 IMPLEMENT_HMAC(md5, HASH_ALGO_MD5)
